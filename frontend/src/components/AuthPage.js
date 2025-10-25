@@ -18,9 +18,8 @@ function AuthApp(){
                 <div className="auth_block">
                     <p className="login_p">Вход</p>
                     <p className="phone_p">Номер телефона</p>
-                    <input type="text" className="input_phone" placeholder="Ваш номер телефона"></input>
-                    <button className="send_code_b">Отправить код</button>
-                </div> 
+                    <input type="text" className="input_phone"></input>
+                </div>
             </>
         </div>
     );
