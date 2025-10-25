@@ -1,0 +1,46 @@
+
+
+.auth_block{
+    background-color: #FFE851;
+    width: 40%;
+    height: 35%;
+    border-radius: 55px;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Jost',sans-serif;
+    display:flexbox;
+    flex-direction: column;
+
+}
+.login_p{
+    font-family: 'Jost',sans-serif;
+    font-size: 200%;
+    font-weight: 900;
+}
+.phone_p{
+
+    text-align: center;
+    text-align: left;
+    margin-left: 32%;
+    font-size: 120%;
+    font-weight: 500;
+    font-family: 'Jost',sans-serif;
+}
+.input_phone{
+    border-radius: 55px;
+    border: none;
+    width: 40%;
+    height:20%;
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 5%;
+}
+
+.send_code_b{
+    border-radius: 55px;
+    border: none;
+}
+
