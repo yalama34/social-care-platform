@@ -30,8 +30,8 @@
 .input_phone{
     border-radius: 55px;
     border: none;
-    width: 75%;
-    font-size: 20px;
+    width: 70%;
+    font-size: 110%;
     padding: 5%;
     margin-left: 50%;
     transform: translate(-50%, 0%);
@@ -41,15 +41,16 @@
 .container_phone {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
+    margin-top: -2%;
 }
 .button_code {
     display: inline-block;
-    padding: 2% 1%;
+    padding: 2% 2%;
     width: 30%;
     background-color: #6E6E6E;
     color: white;
-    font-size: 100%;
+    font-size: 110%;
     font-weight: 600;
     font-family: 'Jost';
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);

@@ -17,7 +17,6 @@ function AuthApp(){
         link_text = "Есть аккаунт? Войти";
     }
 
-    
     return(
         <div style={{
                     backgroundImage: "none",
@@ -35,7 +34,7 @@ function AuthApp(){
                     <p className="phone_p">Номер телефона</p>
                     <div className="container_phone">
                         <input type="text" className="input_phone" placeholder="Введите номер телефона"></input>
-                        <Link to="/auth//verify-phone" className="button_code">
+                        <Link to="/auth/verify-phone" className="button_code">
                             Отправить код
                         </Link>
                     
