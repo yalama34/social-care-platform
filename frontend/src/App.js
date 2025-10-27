@@ -5,14 +5,11 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 function App(){
   return(
     <Router>
-      <div className="App">
         <Routes>
           <Route path="/" element={<MainPage />}></Route>
+          <Route path="/auth/login" element={<AuthPage />}></Route>
+          <Route path="/auth/start-register" element={<AuthPage />}></Route>
         </Routes>
-        <Routes>
-          <Route path="/auth/register" element={<AuthPage />}></Route>
-        </Routes>
-      </div>
     </Router>
   );
 }

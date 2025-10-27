@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom"; 
 import "../styles/main_page.css";
-import backgroundImage from "../assets/background_main.jpg"
 
 function MainPage(){
     return(
@@ -22,7 +21,7 @@ function MainPage(){
                         поговорить
                     </p>
                     <div className="container_button">
-                        <Link to="/auth/register" className="button_1">
+                        <Link to="/auth/login" className="button_1">
                             Я нуждаюсь в помощи
                         </Link>
                         <Link to="/register/volunteer" className="button_2">
