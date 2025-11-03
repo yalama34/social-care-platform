@@ -19,15 +19,13 @@ function VerifyCode() {
                     <p className="login_p">Ввод кода</p>
                     <p className="phone_p">SMS-код</p>
                     <div className="container_phone">
-                        <input type="text" className="input_phone" placeholder="Введите SMS-код"></input>
-                        <button className="button_code">Продолжить</button>
+                        <input type="text" className="input_phone" placeholder="Введите код из SMS"></input>
+                        <button className="button_code" onClick={() => window.location.href = '/auth/end-register'}>Продолжить</button>
                     </div>
 
                 </div>
             
-            
-            
-            
+        
             </>
 
 
