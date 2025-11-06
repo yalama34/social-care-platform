@@ -3,7 +3,7 @@
 .auth_block{
     background-color: #FFE851;
     width: 35%;
-    height: 60%;
+    height: 50%;
     border-radius: 55px;
     position: absolute;
     text-align: center;
@@ -22,7 +22,7 @@
 
     text-align: left;
     margin-left: 15%;
-    margin-top: 10%;
+    margin-top: 5%;
     font-size: 130%;
     font-weight: 500;
     font-family: 'Jost';
@@ -64,7 +64,7 @@
 }
 
 .link_1 {
-    margin-top: 15%;
+    margin-top: 5%;
     font-weight: 400;
     font-family: 'Jost';
     color: #3B3B3B;
