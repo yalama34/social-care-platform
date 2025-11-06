@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from 'react-router-dom';
+import React, {useState} from "react";
+import { Link, useNavigate} from 'react-router-dom';
 import '../styles/auth_page.css'
 
 function AuthApp(){
@@ -7,6 +7,8 @@ function AuthApp(){
     let login_p = "";
     let link_to = "";
     let link_text = "";
+    let [phone, setPhone] = useState("");
+    const navigate = useNavigate();
     if (cur_adress === "/auth/login"){
         login_p = "Вход";
         link_to = "/auth/start-register";
@@ -16,6 +18,30 @@ function AuthApp(){
         link_to = "/auth/login";
         link_text = "Есть аккаунт? Войти";
     }
+
+    const handleSendCode = async () => {
+        if (!phone.trim()) {
+            alert("Введите номер телефона");
+            return;
+        }
+        const request = await fetch(cur_adress,{
+            method: 'POST',
+            headers:{
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify({phone: phone.trim()})
+        })
+        const data = await request.json();
+
+        if (data.code_sent){
+            navigate("/auth/verify-code");
+        }
+        else{
+            alert('Ошибка');
+        }
+    }
+
+    
 
     return(
         <div style={{
@@ -33,10 +59,15 @@ function AuthApp(){
                     <p className="login_p">{login_p}</p>
                     <p className="phone_p">Номер телефона</p>
                     <div className="container_phone">
-                        <input type="text" className="input_phone" placeholder="Введите номер телефона"></input>
-                        <Link to="/auth/verify-phone" className="button_code">
+                        <input type="text" 
+                            className="input_phone" 
+                            placeholder="Введите номер телефона" 
+                            onChange={(e) => setPhone(e.target.value)} 
+                            value={phone}>
+                        </input>
+                        <button className="button_code" onClick={handleSendCode}>
                             Отправить код
-                        </Link>
+                        </button>
                     
                         <Link to={link_to} className="link_1">
                             {link_text}

@@ -1,8 +1,48 @@
-import React from "react";
-import {Link} from "react-router-dom";
+import React,{useState} from "react";
+import {useNavigate} from "react-router-dom";
 import '../styles/request_registration.css';
 
 function RequestRegistration() {
+    const [formData, setFormData] = useState({
+        fullName: '',
+        serviceType: '',
+        address: '',
+        comment: '',
+        desiredTime: ''
+    });
+    const navigate = useNavigate();
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+    const handleSubmit = async () => {
+        if (!formData.fullName.trim() || !formData.serviceType || !formData.address.trim() || !formData.desiredTime) {
+            alert("Заполните обязательные поля: ФИО, тип услуги, адрес и время");
+            return;
+        }
+        const response = await fetch('/api/requests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    full_name: formData.fullName.trim(),
+                    service_type: formData.serviceType,
+                    address: formData.address.trim(),
+                    comment: formData.comment.trim(),
+                    desired_time: formData.desiredTime
+                })
+            });
+        const data = await response.json();
+        if (data.success) {
+                navigate('/requests');
+            } else {
+                alert('Не удалось создать заявку');
+            }
+    }
     return(
         <div style={{
             backgroundImage: "none",
@@ -20,40 +60,67 @@ function RequestRegistration() {
                     <div className="container_out">
                         <div className="container_in">
                             <p className="input_p">Фамилия Имя</p>
-                            <input type="text" className="input_field" placeholder="Введите Фамилия Имя"></input>
+                            <input 
+                                type="text" 
+                                className="input_field" 
+                                placeholder="Введите Фамилия Имя"
+                                name="fullName"
+                                value={formData.fullName}
+                                onChange={handleInputChange}
+                            />
                             <p className="input_p">Тип услуги</p>
                             <div className="custom-select">
-                                <select className="selest">
+                                <select 
+                                    className="selest"
+                                    name="serviceType"
+                                    value={formData.serviceType}
+                                    onChange={handleInputChange}
+                                >
                                     <option value="">Выберите услугу</option>
                                     <option value="cleaning">Уборка</option>
-                                    <option value="repair">Вынос мусора</option>
+                                    <option value="rubbish">Вынос мусора</option>
                                     <option value="delivery_food">Доставка продуктов</option>
                                     <option value="delivery_drugs">Доставка лекарств</option>
                                     <option value="consultation">Общение</option>
-                                    <option value="consultation">Помощь в передвижении</option>
-                                    <option value="other">Другая услуга</option>
+                                    <option value="mobility_help">Помощь в передвижении</option>
+                                    <option value="other">Другая услуга (указать в коментарии)</option>
                                 </select>
                             </div>
                         </div>
                         <div className="container_in">
                             <p className="input_p">Адрес проживания</p>
-                            <input type="text" className="input_field" placeholder="Введите адрес"></input>
+                            <input 
+                                type="text" 
+                                className="input_field" 
+                                placeholder="Введите адрес"
+                                name="address"
+                                value={formData.address}
+                                onChange={handleInputChange}
+                            />
                             <p className="input_p">Комментарий</p>
-                            <input type="text" className="input_field" placeholder="Введите комментарий"></input>
+                            <input 
+                                type="text" 
+                                className="input_field" 
+                                placeholder="Введите комментарий"
+                                name="comment"
+                                value={formData.comment}
+                                onChange={handleInputChange}
+                            />
                         </div>
                     </div>
                     <p className="input_p">Желаемое время выполнения</p>
-                    <input type="datetime-local" className="datetime-input-custom"/>
-                    <Link to="" className="button">
+                    <input 
+                        type="datetime-local" 
+                        className="datetime-input-custom"
+                        name="desiredTime"
+                        value={formData.desiredTime}
+                        onChange={handleInputChange}
+                    />
+                    <button className="button" onClick={handleSubmit}>
                         Отправить
-                    </Link>
+                    </button>
                 </>
-           
         </div>
-
-
     )
-
-
 }
 export default RequestRegistration;

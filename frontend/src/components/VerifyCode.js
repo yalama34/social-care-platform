@@ -1,8 +1,30 @@
-import React from "react";
-import { Link } from 'react-router-dom';
+import React,{useState} from "react";
+import { useNavigate } from 'react-router-dom';
 import '../styles/auth_page.css'
 
 function VerifyCode() {
+    const [code, setCode] = useState('');
+    const navigate = useNavigate();
+    const handleValidateCode = async () => {
+        if (!code.trim()){
+            alert("Введите код");
+        return;
+    }
+        const request=await fetch("/auth/verify-phone",{
+            method:'POST',
+            headers:{
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify({code: code.trim()})
+        })
+        const data=await request.json();
+        if (data.code_sent){
+            navigate("/auth/end-register");
+        }
+        else{
+            alert('Ошибка');
+        }
+    }
     return(
         <div style={{
                     backgroundImage: "none",
@@ -19,8 +41,15 @@ function VerifyCode() {
                     <p className="login_p">Ввод кода</p>
                     <p className="phone_p">SMS-код</p>
                     <div className="container_phone">
-                        <input type="text" className="input_phone" placeholder="Введите код из SMS"></input>
-                        <button className="button_code" onClick={() => window.location.href = '/auth/end-register'}>Продолжить</button>
+                        <input type="text"
+                         className="input_phone"
+                          placeholder="Введите код из SMS"
+                          onChange={(e) => setCode(e.target.value)}
+                          value={code}>
+                        </input>
+                        <button className="button_code" onClick={handleValidateCode}>
+                            Продолжить
+                        </button>
                     </div>
 
                 </div>
@@ -30,9 +59,6 @@ function VerifyCode() {
 
 
         </div>
-
-
-
     )
 
 }
