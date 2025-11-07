@@ -10,6 +10,7 @@ function RequestRegistration() {
         comment: '',
         desiredTime: ''
     });
+    const backendUrl = "http://localhost:8000";
     const navigate = useNavigate();
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -23,7 +24,7 @@ function RequestRegistration() {
             alert("Заполните обязательные поля: ФИО, тип услуги, адрес и время");
             return;
         }
-        const response = await fetch('/api/requests', {
+        const response = await fetch(backendUrl + '/api/requests', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

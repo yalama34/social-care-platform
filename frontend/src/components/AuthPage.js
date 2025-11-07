@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import { Link, useNavigate} from 'react-router-dom';
+import { Link, replace, useNavigate} from 'react-router-dom';
 import '../styles/auth_page.css'
 
 function AuthApp(){
@@ -7,6 +7,7 @@ function AuthApp(){
     let login_p = "";
     let link_to = "";
     let link_text = "";
+    const backendUrl = "http://localhost:8000";
     let [phone, setPhone] = useState("");
     const navigate = useNavigate();
     if (cur_adress === "/auth/login"){
@@ -24,7 +25,7 @@ function AuthApp(){
             alert("Введите номер телефона");
             return;
         }
-        const request = await fetch(cur_adress,{
+        const request = await fetch(backendUrl + cur_adress,{
             method: 'POST',
             headers:{
                 'Content-type': 'application/json'
@@ -34,7 +35,8 @@ function AuthApp(){
         const data = await request.json();
 
         if (data.code_sent){
-            navigate("/auth/verify-code");
+            localStorage.setItem("phone", phone.trim())
+            navigate("/auth/verify-phone");
         }
         else{
             alert('Ошибка');

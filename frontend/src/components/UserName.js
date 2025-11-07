@@ -4,26 +4,29 @@ import '../styles/auth_page.css'
 
 function UserName() {
     const [username, setUsername] = useState('');
-        const navigate = useNavigate();
-        const handleUsername = async () => {
-            if (!username.trim()){
-                alert("Введите Имя");
-            return;
+    const navigate = useNavigate();
+    const backendUrl = "http://localhost:8000";
+    const handleUsername = async () => {
+        if (!username.trim()){
+            alert("Введите Имя");
+        return;
         }
-            const request=await fetch("/auth/end-register",{
+        const temp_token = localStorage.getItem('temp_token');
+            const request=await fetch(backendUrl + "/auth/end-register",{
                 method:'POST',
                 headers:{
                     'Content-type': 'application/json'
                 },
-                body: JSON.stringify({username: username.trim()})
+                body: JSON.stringify({
+                    full_name: username.trim(),
+                    temp_token: temp_token
+                })
             })
             const data=await request.json();
-            if (data.code_sent){
-                navigate("/request");
-            }
-            else{
-                alert('Ошибка');
-            }
+            localStorage.removeItem('phone');
+            localStorage.removeItem('temp_token');
+            localStorage.setItem('access_token', data.access_token);
+            navigate('/home');
         }
     return(
         <div style={{

@@ -5,20 +5,26 @@ import '../styles/auth_page.css'
 function VerifyCode() {
     const [code, setCode] = useState('');
     const navigate = useNavigate();
+    const backendUrl = "http://localhost:8000";
     const handleValidateCode = async () => {
         if (!code.trim()){
             alert("Введите код");
         return;
     }
-        const request=await fetch("/auth/verify-phone",{
+        const phone = localStorage.getItem('phone');
+        const request=await fetch(backendUrl + "/auth/verify-phone",{
             method:'POST',
             headers:{
                 'Content-type': 'application/json'
             },
-            body: JSON.stringify({code: code.trim()})
+            body: JSON.stringify({
+                code: code.trim(),
+                phone: phone
+            })
         })
         const data=await request.json();
-        if (data.code_sent){
+        if (data.verified){
+            localStorage.setItem('temp_token', data.temp_token)
             navigate("/auth/end-register");
         }
         else{
