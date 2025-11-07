@@ -3,6 +3,7 @@ from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import ForeignKey, String, Integer, DateTime, Boolean
 import datetime
+from sqlalchemy.sql import func
 
 class User(BaseModel):
     id: int
@@ -25,9 +26,9 @@ class RefreshToken(Base):
     __tablename__ = 'refresh_tokens'
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    role: Mapped[int] = mapped_column(default="user")
+    role: Mapped[str] = mapped_column(default="user")
     token: Mapped[str] = mapped_column(unique=True, index=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now())
+    created_at: Mapped[datetime.datetime] = mapped_column(default=func.now())
     expires_at: Mapped[datetime.datetime] = mapped_column(index=True)
     is_revoked: Mapped[bool] = mapped_column(default=False)
 
@@ -55,3 +56,9 @@ class EndRegisterRequest(BaseModel):
         if not re.match(r"^[А-ЯЁ][а-яё]+\s+[А-ЯЁ][а-яё]+$", value): #пока что регулярка только для стандартного ввода ФИО (без двойных фамилий, не подразумевает ввода только ФИ)
             raise ValueError('Invalid full name')
         return value
+
+class EndLoginRequest(BaseModel):
+    temp_token: str
+
+class CheckSessionRequest(BaseModel):
+    access_token: str
