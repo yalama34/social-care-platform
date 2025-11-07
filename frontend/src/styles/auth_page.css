@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
+
+.auth_block{
+    background-color: #FFE851;
+    width: 35%;
+    height: 50%;
+    border-radius: 55px;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+}
+.login_p{
+    font-family: 'Jost';
+    font-size: 200%;
+    font-weight: 800;
+    text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+}
+.phone_p{
+
+    text-align: left;
+    margin-left: 15%;
+    margin-top: 5%;
+    font-size: 130%;
+    font-weight: 500;
+    font-family: 'Jost';
+}
+.input_phone{
+    border-radius: 55px;
+    border: none;
+    width: 70%;
+    font-size: 110%;
+    padding: 5%;
+    margin-left: 50%;
+    transform: translate(-50%, 0%);
+
+}
+
+.container_phone {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: -2%;
+}
+.button_code {
+    display: inline-block;
+    padding: 2% 2%;
+    width: 30%;
+    background-color: #6E6E6E;
+    color: white;
+    font-size: 110%;
+    font-weight: 600;
+    font-family: 'Jost';
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
+    text-decoration: none;
+    border-radius: 55px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    margin-left: 50%;
+    transform: translate(-50%, 0%);
+}
+
+.link_1 {
+    margin-top: 5%;
+    font-weight: 400;
+    font-family: 'Jost';
+    color: #3B3B3B;
+}
