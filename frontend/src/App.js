@@ -5,6 +5,7 @@ import UserName from "./components/UserName";
 import RefreshHandler from "./components/RefreshHandler";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import RequestRegistration from "./components/RequestRegistration";
+import HomePage from "./components/HomePage";
 
 function App(){
   return(
@@ -13,11 +14,12 @@ function App(){
           <Route path="/auth" element={<MainPage />}></Route>
           <Route path="/" element={<Navigate to="/refresh" />} />
           <Route path="/refresh" element={<RefreshHandler />}></Route>
-          <Route path="/auth/login" element={<AuthPage />}></Route>
+          <Route path="/auth/login-start" element={<AuthPage />}></Route>
           <Route path="/auth/start-register" element={<AuthPage />}></Route>
           <Route path="/auth/verify-phone" element={<VerifyCode />}></Route>
           <Route path="/auth/end-register" element={<UserName />}></Route>
           <Route path="/request" element={<RequestRegistration />}></Route>
+          <Route path="/home/*" element={<HomePage />}></Route>
         </Routes>
     </Router>
   );

@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+    font-family: 'Jost', sans-serif;
+}
+
+.div-header {
+    background-color: #FFE851;
+    padding: 20px;
+    text-align: left;
+    border-bottom: 3px solid #000;
+}
+
+.p-header {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.p-bold {
+    font-weight: 700;
+    font-size: 22px;
+    margin: 30px 0 20px 0;
+    color: #000;
+}
+
+.requests-div {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 30px 20px;
+}
+
+.requests-grid {
+    display: grid;
+    flex-direction: row;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.request-card {
+    background-color: #ccc;
+    border-radius: 12px;
+    padding: 15px;
+    min-height: 80px;
+    width: max-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    font-size: 16px;
+    margin: 20px 0;
+}
+
+.request-button {
+    display: inline-block;
+    padding: 14px 40px;
+    background-color: #FFE851;
+    color: #000;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Jost', sans-serif;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: center;
+    margin: 20px 0;
+}
+
+.contact-section {
+    background-color: #e0e0e0;
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid #ccc;
+    margin-top: auto;
+}
+
+.contact-text {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+}
+
+
+

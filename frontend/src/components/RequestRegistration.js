@@ -10,8 +10,10 @@ function RequestRegistration() {
         comment: '',
         desiredTime: ''
     });
-    const backendUrl = "http://localhost:8000";
+
+    const backendUrl = "http://localhost:8001";
     const navigate = useNavigate();
+    const role = localStorage.getItem("role");
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -24,23 +26,26 @@ function RequestRegistration() {
             alert("Заполните обязательные поля: ФИО, тип услуги, адрес и время");
             return;
         }
-        const response = await fetch(backendUrl + '/api/requests', {
+        const response = await fetch(backendUrl + '/request/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
+                    access_token: localStorage.getItem("access_token"),
                     full_name: formData.fullName.trim(),
                     service_type: formData.serviceType,
                     address: formData.address.trim(),
                     comment: formData.comment.trim(),
                     desired_time: formData.desiredTime
+
                 })
             });
         const data = await response.json();
         if (data.success) {
-                navigate('/requests');
-            } else {
+                navigate(`/home/${role}`);
+            } 
+        else {
                 alert('Не удалось создать заявку');
             }
     }

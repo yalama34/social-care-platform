@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from models import User, PhoneRequest, VerifyPhone, EndRegisterRequest, EndLoginRequest
+from shared.models import PhoneRequest, VerifyPhone, EndRegisterRequest, EndLoginRequest
 from authx import AuthX, AuthXConfig
 from service import TokenService
-from database import SessionDep
+from shared.database import SessionDep
 from datetime import timedelta, datetime
-from models import UserModel, RefreshToken
+from shared.models import UserModel, RefreshToken
 from sqlalchemy.future import select
 
 temp_config = AuthXConfig(
@@ -15,8 +15,7 @@ temp_security = AuthX(config=temp_config)
 
 config = AuthXConfig(
     JWT_SECRET_KEY="secret-key",
-    JWT_ACCESS_TOKEN_EXPIRES=timedelta(hours=2),
-    JWT_REFRESH_TOKEN_EXPIRES=timedelta(weeks=2),
+    JWT_ACCESS_TOKEN_EXPIRES=timedelta(days=2),
 )
 security = AuthX(config=config)
 
@@ -37,7 +36,7 @@ async def start_register(request: PhoneRequest, session : SessionDep):
     return {
         "code_sent": True,
         "phone": request.phone,
-        "wait_time": 60,
+        "wait_time": datetime.now() + timedelta(seconds=60),
         }
 
 @router.post("/verify-phone")
@@ -81,14 +80,13 @@ async def end_register(request: EndRegisterRequest, session : SessionDep):
     await session.refresh(user)
 
     token = TokenService(session)
-    refresh_token = await token.create_refresh_token(user_id=user.id)
+    refresh_token = await token.create_refresh_token(user_id=user.id, role=request.role)
     print("Refresh токен успешно создан", refresh_token.token, flush=True)
-    access_token = await token.create_access_token(user_id=user.id, security=security)
+    access_token = await token.create_access_token(user_id=user.id, security=security, role=request.role)
+
     print("Access токен успешно создан", access_token, flush=True)
     return {
         "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer"
     }
 
 @router.post("/login-start")

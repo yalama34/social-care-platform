@@ -10,13 +10,13 @@ function AuthApp(){
     const backendUrl = "http://localhost:8000";
     let [phone, setPhone] = useState("");
     const navigate = useNavigate();
-    if (cur_adress === "/auth/login"){
+    if (cur_adress == "/auth/login-start"){
         login_p = "Вход";
         link_to = "/auth/start-register";
         link_text = "Нет аккаунта? Зарегестрируйся";
     } else{
         login_p = "Регистрация";
-        link_to = "/auth/login";
+        link_to = "/auth/login-start";
         link_text = "Есть аккаунт? Войти";
     }
 

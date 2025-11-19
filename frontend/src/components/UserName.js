@@ -12,21 +12,24 @@ function UserName() {
         return;
         }
         const temp_token = localStorage.getItem('temp_token');
-            const request=await fetch(backendUrl + "/auth/end-register",{
+        const role = localStorage.getItem("role");
+            const request=await fetch(backendUrl + `/auth/end-register`,{
                 method:'POST',
                 headers:{
                     'Content-type': 'application/json'
                 },
                 body: JSON.stringify({
                     full_name: username.trim(),
-                    temp_token: temp_token
+                    temp_token: temp_token,
+                    role: role
                 })
             })
             const data=await request.json();
             localStorage.removeItem('phone');
             localStorage.removeItem('temp_token');
             localStorage.setItem('access_token', data.access_token);
-            navigate('/home');
+            alert(data.access_token);
+            navigate(`/home/${role}`);
         }
     return(
         <div style={{

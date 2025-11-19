@@ -12,5 +12,6 @@ RUN pip install -r requirements.txt
 COPY . .
 
 EXPOSE 8001
+ENV PYTHONPATH="/app"
 
-CMD ["python", "app/main.py"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

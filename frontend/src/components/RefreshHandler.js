@@ -6,9 +6,11 @@ function RefreshHandler() {
 
   useEffect(() => {
     const backendUrl = "http://localhost:8000";
+    const role = localStorage.getItem("role");
 
     const refresh = async () => {
       const access_token = localStorage.getItem("access_token");
+      alert(access_token);
       if (!access_token) {
         navigate("/auth");
         return;
@@ -26,7 +28,7 @@ function RefreshHandler() {
         const data = await response.json();
 
         if (data.session_active) {
-          navigate("/home");
+            navigate(`/home/${role}`);
         } else {
           navigate("/auth");
         }

@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 import secrets
 from sqlalchemy import select
-from models import RefreshToken, UserModel
+from shared.models import RefreshToken
+
 
 class TokenService():
     def __init__(self, session):
@@ -33,6 +34,7 @@ class TokenService():
         permissions = "TEMPLATE"
         payload = {
             "user_id": user_id,
+            "role": role,
             "permissions": await self.get_permissions(role),
             "expires_at": int((datetime.now() + timedelta(days=2)).timestamp()),
 

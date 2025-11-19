@@ -1,8 +1,20 @@
-import React from "react";
-import { Link } from "react-router-dom"; 
+import {React, useEffect} from "react";
+import { Link, useNavigate } from "react-router-dom"; 
 import "../styles/main_page.css";
 
 function MainPage(){
+    const navigate = useNavigate();
+    const roleUser = async () =>{
+        localStorage.setItem("role", "user");
+        navigate("/auth/start-register");
+
+    }
+    const roleVolounteer = async () =>{
+        localStorage.setItem("role", "volunteer");
+        navigate("/auth/start-register");
+
+    }
+
     return(
         <div style={{
             backgroundImage: 'url(${backgroundImage})',
@@ -21,12 +33,12 @@ function MainPage(){
                         поговорить
                     </p>
                     <div className="container_button">
-                        <Link to="/auth/login" className="button_1">
+                        <button className="button_1" onClick={roleUser}>
                             Я нуждаюсь в помощи
-                        </Link>
-                        <Link to="/register/volunteer" className="button_2">
+                        </button>
+                        <button className="button_2" onClick={roleVolounteer}>
                             Я хочу помочь
-                        </Link>
+                        </button>
                     </div>
                 </div> 
             <footer>

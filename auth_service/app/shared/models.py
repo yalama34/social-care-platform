@@ -9,6 +9,8 @@ class User(BaseModel):
     id: int
     full_name: str
     phone: str
+    access_token: str
+    refresh_token: str
 
 #DateBase models
 class Base(DeclarativeBase):
@@ -30,6 +32,17 @@ class RefreshToken(Base):
     expires_at: Mapped[datetime.datetime] = mapped_column(index=True)
     is_revoked: Mapped[bool] = mapped_column(default=False)
 
+class RequestModel(Base):
+    __tablename__ = 'requests'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    full_name: Mapped[str] = mapped_column(String)
+    service_type: Mapped[str] = mapped_column(String)
+    address: Mapped[str] = mapped_column(String)
+    comment: Mapped[str] = mapped_column(String)
+    desired_time: Mapped[datetime.datetime] = mapped_column(DateTime)
+    status: Mapped[str] = mapped_column(String, default="onwait")
+    volunteer_id: Mapped[int] = mapped_column(Integer, default=-1)
 
 #Requests models
 class PhoneRequest(BaseModel):
@@ -60,3 +73,20 @@ class EndLoginRequest(BaseModel):
 
 class CheckSessionRequest(BaseModel):
     access_token: str
+
+class RegisterRequest(BaseModel):
+    access_token: str
+    address: str
+    comment: str
+    desired_time: str
+    full_name: str
+    service_type: str
+    @field_validator('desired_time')
+    def validate_desired_time(cls, value):
+        """Валидируем, что строка в формате ISO datetime"""
+        try:
+            from datetime import datetime
+            datetime.fromisoformat(value)
+            return value
+        except ValueError:
+            raise ValueError(f"Invalid datetime format. Expected ISO format like '2025-11-17T12:00', got '{value}'")

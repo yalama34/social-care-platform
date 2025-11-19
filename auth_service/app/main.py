@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from routers import router, security
-from database import engine, SessionDep
-from models import Base, CheckSessionRequest
-from models import UserModel, RefreshToken
+from shared.database import engine, SessionDep
+from shared.models import Base, CheckSessionRequest
+from shared.models import UserModel, RefreshToken
 from contextlib import asynccontextmanager
 from service import TokenService
 from datetime import datetime
@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all) # Чистит всю БД, ОПАСНО!!!
+        # await conn.run_sync(Base.metadata.drop_all) # Чистит всю БД, ОПАСНО!!!
         await conn.run_sync(Base.metadata.create_all)
     print("✅ БД создана")
     yield
