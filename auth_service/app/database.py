@@ -6,13 +6,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# SQLite с асинхронным драйвером
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_async_engine(
     url=DATABASE_URL,
     echo=True,
-    connect_args={"check_same_thread": False}  # Важно для async работы
+    connect_args={"check_same_thread": False}
 )
 
 new_session = async_sessionmaker(engine, expire_on_commit=False)

@@ -15,6 +15,7 @@ function RequestRegistration() {
     const backendUrl = "http://localhost:8001";
     const navigate = useNavigate();
     const role = localStorage.getItem("role");
+    const access_token = localStorage.getItem("access_token");
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -31,9 +32,9 @@ function RequestRegistration() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${access_token}`,
                 },
                 body: JSON.stringify({
-                    access_token: localStorage.getItem("access_token"),
                     full_name: formData.fullName.trim(),
                     service_type: formData.serviceType,
                     address: formData.address.trim(),

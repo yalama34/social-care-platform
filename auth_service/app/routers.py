@@ -40,7 +40,7 @@ async def start_register(request: PhoneRequest, session : SessionDep):
         }
 
 @router.post("/verify-phone")
-async def verify_phone(request: VerifyPhone, session: SessionDep):
+async def verify_phone(request: VerifyPhone, session: SessionDep) -> dict:
     """Проверка кода, создание временного токена для завершения регистрации"""
     if not request.code == "123456":
         raise HTTPException(status_code=400, detail="Invalid code")
@@ -61,10 +61,11 @@ async def verify_phone(request: VerifyPhone, session: SessionDep):
     return {
         "verified": True,
         "temp_token": temp_token,
+        "purpose": purpose,
     }
 
 @router.post("/end-register")
-async def end_register(request: EndRegisterRequest, session : SessionDep):
+async def end_register(request: EndRegisterRequest, session : SessionDep) -> dict:
     try:
         payload = temp_security._decode_token(token=request.temp_token)
     except Exception:
@@ -90,7 +91,7 @@ async def end_register(request: EndRegisterRequest, session : SessionDep):
     }
 
 @router.post("/login-start")
-async def login(request: PhoneRequest, session : SessionDep):
+async def login(request: PhoneRequest, session : SessionDep) -> dict:
     print("Получен номер:", request.phone, flush=True)
     result = await session.execute(
         select(UserModel).where(UserModel.phone == request.phone)
@@ -107,23 +108,21 @@ async def login(request: PhoneRequest, session : SessionDep):
     }
 
 @router.post("/login-end")
-async def login_end(request: EndLoginRequest, session : SessionDep):
+async def login_end(request: EndLoginRequest, session : SessionDep) -> dict:
     try:
         payload = temp_security._decode_token(token=request.temp_token)
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
-    if payload.get("purpose") != 'login':
+    if payload.purpose != 'login':
         raise HTTPException(status_code=400, detail="Invalid token purpose")
 
-    user = await session.execute(select(UserModel).where(UserModel.phone == payload.phone))
+    data = await session.execute(select(UserModel).where(UserModel.phone == payload.phone))
+    user = data.scalar()
     token = TokenService(session)
     await token.update_refresh_token(user.id)
-    refresh_token = await session.execute(select(RefreshToken).where(RefreshToken.user_id == user.id))
     access_token = await token.create_access_token(user_id=user.id, security=security)
     return {
         "access_token": access_token,
-        "refresh_token":refresh_token.token,
-        "token_type": "bearer"
     }
 
 

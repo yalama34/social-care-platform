@@ -78,7 +78,6 @@ class CheckSessionRequest(BaseModel):
     access_token: str
 
 class RegisterRequest(BaseModel):
-    access_token: str
     address: str
     comment: str
     desired_time: str

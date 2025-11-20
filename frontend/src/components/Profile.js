@@ -14,7 +14,6 @@ function Profile() {
             method: 'GET'
         })
         const data = await request.json();
-        alert(data);
         setProfileData(data);
         setUsername(data.full_name);
         setAbout(data.about || '');

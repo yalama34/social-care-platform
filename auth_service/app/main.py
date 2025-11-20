@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from routers import router, security
 from shared.database import engine, SessionDep
-from shared.models import Base, CheckSessionRequest
+from shared.models import Base
 from shared.models import UserModel, RefreshToken
 from contextlib import asynccontextmanager
 from service import TokenService
@@ -37,9 +37,13 @@ app.include_router(router)
 
 
 @app.post("/refresh")
-async def check_session(request: CheckSessionRequest, session: SessionDep):
-    access_token = security._decode_token(request.access_token)
-    print(access_token, flush=True)
+async def check_session(session: SessionDep, authorization: str = Header(None)) -> dict:
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Token is not given")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid token format")
+    access_token = authorization.split()[1]
+    access_token = security._decode_token(token=access_token)
     result = await session.execute(
         select(UserModel).where(UserModel.id == access_token.user_id)
     )
@@ -58,7 +62,7 @@ async def check_session(request: CheckSessionRequest, session: SessionDep):
                     "session_active": False,
                 }
             else:
-                return HTTPException(status_code=403, detail="You have been banned")
+                raise HTTPException(status_code=403, detail="You have been banned")
         new_access_token = await token.create_access_token(user_id=user.id, security=security)
         return {
             "session_active": True,
@@ -66,7 +70,7 @@ async def check_session(request: CheckSessionRequest, session: SessionDep):
         }
     return{
         "session_active": True,
-        "access_token": request.access_token,
+        "access_token": access_token,
     }
 
 

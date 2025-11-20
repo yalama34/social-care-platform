@@ -39,7 +39,27 @@ async def request_feed(session: SessionDep, authorization: str = Header(None)):
         }
         return_requests.append(request)
     return {return_requests}
-    
+
+@feed_router.post("/request-feed")
+async def accept_request(session: SessionDep, request_id: int, authorization: str = Header(None)):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Token is not given")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid token format")
+    access_token = authorization.split()[1]
+    access_token = security._decode_token(token=access_token)
+    if access_token.role == "user":
+        raise HTTPException(status_code=403, detail="Forbidden")
+    data = await session.execute(select(RequestModel).where(RequestModel.id == request_id))
+    data.status = "in_progress"
+    session.add(data)
+    await session.commit()
+    session.refresh(data)
+
+    return {
+        "success": True
+    }
+
 
 
 

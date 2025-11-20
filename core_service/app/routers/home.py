@@ -1,6 +1,6 @@
 from ..common.database import SessionDep
 from ..common.models import RegisterRequest, RequestModel, UserModel, CheckSessionRequest
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from datetime import timedelta, datetime
 from sqlalchemy import select
 from authx import AuthX, AuthXConfig
@@ -14,14 +14,16 @@ home_router = APIRouter(prefix="/home", tags=["home"])
 
 
 @home_router.post("/{role}")
-async def user_home(role: str, request: CheckSessionRequest, session : SessionDep):
+async def user_home(session : SessionDep, authorization: str = Header(None)):
     '''Домашняя страница пользователя'''
-    try:
-        payload = security._decode_token(token=request.access_token)
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Token is not given")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid token format")
+    access_token = authorization.split()[1]
+    access_token = security._decode_token(token=access_token)
 
-    request_data = await session.execute(select(RequestModel).where(RequestModel.user_id == payload.user_id))
+    request_data = await session.execute(select(RequestModel).where(RequestModel.user_id == access_token.user_id))
     all_requests = request_data.scalars().all()
 
     active_requests = {}

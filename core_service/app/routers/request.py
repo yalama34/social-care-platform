@@ -1,6 +1,6 @@
 from ..common.database import SessionDep
 from ..common.models import RegisterRequest, RequestModel, UserModel
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from datetime import timedelta, datetime
 from sqlalchemy import select
 from authx import AuthX, AuthXConfig
@@ -14,14 +14,15 @@ security = AuthX(config=config)
 request_router = APIRouter(prefix="/request", tags=["request"])
 
 @request_router.post("/register")
-async def register_request(session: SessionDep, request: RegisterRequest):
-    print(security._config.JWT_SECRET_KEY)
+async def register_request(session: SessionDep, request: RegisterRequest, authorization: str = Header(None)):
     request_service = RequestService(session = session)
     try:
-        try:
-            access_token = security._decode_token(request.access_token)
-        except Exception as e:
-            raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
+        if not authorization:
+            raise HTTPException(status_code=401, detail="Token is not given")
+        if not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Invalid token format")
+        access_token = authorization.split()[1]
+        access_token = security._decode_token(token=access_token)
 
         await request_service.register_request(access_token=access_token, request=request)
         return {

@@ -17,12 +17,12 @@ function RefreshHandler() {
       }
 
       try {
-        const response = await fetch(backendUrl + "/refresh", {
+        const response = await fetch(backendUrl + `/refresh`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${access_token}`,
           },
-          body: JSON.stringify({ access_token }),
         });
 
         const data = await response.json();

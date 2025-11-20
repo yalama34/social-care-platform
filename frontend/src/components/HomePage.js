@@ -11,16 +11,15 @@ function HomePage() {
     const getRequests = async () => {
         const backendUrl = "http://localhost:8001";
         const role = localStorage.getItem("role");
+        const access_token = localStorage.getItem("access_token");
         setLoading(true);
         try{
             const request = await fetch(backendUrl + `/home/${role}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    access_token: localStorage.getItem("access_token"),
-                }) 
+                    'Authorization': `Bearer ${access_token}`,
+                }
             });
             const data = await request.json();
             if (request.status === 200){

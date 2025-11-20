@@ -36,7 +36,7 @@ class PhoneRequest(BaseModel):
     phone: str
 
     @field_validator('phone')
-    def validate_phone_number(cls, value):
+    def validate_phone_number(cls, value: str) -> Exception | str:
         if not re.match(r'(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)', value):
             raise ValueError('Invalid phone number')
         return value
@@ -50,13 +50,14 @@ class EndRegisterRequest(BaseModel):
     temp_token: str
 
     @field_validator('full_name')
-    def validate_full_name(cls, value):
+    def validate_full_name(cls, value) -> Exception | str:
         if not re.match(r"^[А-ЯЁ][а-яё]+\s+[А-ЯЁ][а-яё]+$", value): #пока что регулярка только для стандартного ввода ФИО (без двойных фамилий, не подразумевает ввода только ФИ)
             raise ValueError('Invalid full name')
         return value
 
 class EndLoginRequest(BaseModel):
     temp_token: str
+    role: str
 
 class CheckSessionRequest(BaseModel):
     access_token: str

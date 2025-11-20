@@ -74,9 +74,6 @@ class EndRegisterRequest(BaseModel):
 class EndLoginRequest(BaseModel):
     temp_token: str
 
-class CheckSessionRequest(BaseModel):
-    access_token: str
-
 class RegisterRequest(BaseModel):
     access_token: str
     address: str
