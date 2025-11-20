@@ -1,5 +1,5 @@
 from ..common.database import SessionDep
-from ..common.models import RegisterRequest, RequestModel, UserModel
+from ..common.models import RegisterRequest, RequestModel, UserModel, AcceptRequest
 from fastapi import APIRouter, HTTPException, Header
 from datetime import timedelta, datetime
 from sqlalchemy import select
@@ -24,7 +24,7 @@ async def request_feed(session: SessionDep, authorization: str = Header(None)):
         raise HTTPException(status_code=403, detail="Forbidden")
     
     data = await session.execute(select(RequestModel).where(RequestModel.status == "onwait"))
-    requests = data.scalar().all()
+    requests = data.scalars().all()
     return_requests = []
 
     for req in requests:
@@ -38,10 +38,10 @@ async def request_feed(session: SessionDep, authorization: str = Header(None)):
             "desired_time": req.desired_time.isoformat() if hasattr(req.desired_time, 'isoformat') else str(req.desired_time),
         }
         return_requests.append(request)
-    return {return_requests}
+    return return_requests
 
 @feed_router.post("/request-feed")
-async def accept_request(session: SessionDep, request_id: int, authorization: str = Header(None)):
+async def accept_request(session: SessionDep, request: AcceptRequest, authorization: str = Header(None)):
     if not authorization:
         raise HTTPException(status_code=401, detail="Token is not given")
     if not authorization.startswith("Bearer "):
@@ -50,7 +50,8 @@ async def accept_request(session: SessionDep, request_id: int, authorization: st
     access_token = security._decode_token(token=access_token)
     if access_token.role == "user":
         raise HTTPException(status_code=403, detail="Forbidden")
-    data = await session.execute(select(RequestModel).where(RequestModel.id == request_id))
+    data = await session.execute(select(RequestModel).where(RequestModel.id == request.request_id))
+    data = data.scalar()
     data.status = "in_progress"
     session.add(data)
     await session.commit()

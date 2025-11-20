@@ -62,6 +62,7 @@ function HomePage() {
             const dt = request.desired_time ? new Date(request.desired_time) : null;
             const timeString = dt ? dt.toLocaleString('ru-RU', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : (request.desired_time || "Время не указано");
             return (
+                <div className="container-3">
                 <div key={request.id} className="request-card"> 
                     <p>{serviceStatus[request.status]}</p>
                     <p>{serviceType[request.service_type]}</p>
@@ -69,6 +70,7 @@ function HomePage() {
                     <p>Комментарий {request.comment || "Нет комментария"}</p>
                     <p>Желаемое время: {timeString}</p>
                 
+                </div>
                 </div>
             );
         })

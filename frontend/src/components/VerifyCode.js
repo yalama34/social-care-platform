@@ -26,7 +26,7 @@ function VerifyCode() {
         const data=await request.json();
         if (data.verified){
             localStorage.setItem('temp_token', data.temp_token)
-            if (data.purpose === 'register'){
+            if (data.purpose === 'registration'){
                 navigate("/auth/end-register");
             }
             else if (data.purpose === 'login'){

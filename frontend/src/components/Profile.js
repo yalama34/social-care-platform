@@ -37,13 +37,14 @@ function Profile() {
     return (
         <div style={{
             backgroundImage: "none",
-            backgroundColor: "white",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            margin: 0,
-            padding: 0,
-            minHeight: "100vh", 
+                backgroundColor: "white",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                margin: 0,
+                padding: 0,
+                minHeight: "100vh",
+                overflow: "hidden", 
         }}>
             <p>Профиль</p>
             <p>{username}</p>

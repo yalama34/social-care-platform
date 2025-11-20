@@ -77,6 +77,9 @@ class EndLoginRequest(BaseModel):
 class CheckSessionRequest(BaseModel):
     access_token: str
 
+class AcceptRequest(BaseModel):
+    request_id: int
+
 class RegisterRequest(BaseModel):
     address: str
     comment: str

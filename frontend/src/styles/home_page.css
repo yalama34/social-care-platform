@@ -1,14 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
 
 * {
-    font-family: 'Jost', sans-serif;
+    font-family: 'Jost';
 }
 
 .div-header {
     background-color: #FFE851;
     padding: 20px;
     text-align: left;
-    border-bottom: 3px solid #000;
 }
 
 .p-header {
@@ -37,7 +36,10 @@
     gap: 15px;
     margin-bottom: 20px;
 }
-
+.container-3{
+    display: flex;
+    flex-direction: row;
+}
 .request-card {
     background-color: #ccc;
     border-radius: 12px;
