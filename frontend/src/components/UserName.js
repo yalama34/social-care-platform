@@ -28,6 +28,7 @@ function UserName() {
             localStorage.removeItem('phone');
             localStorage.removeItem('temp_token');
             localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('full_name', username.trim());
             alert(data.access_token);
             navigate(`/home/${role}`);
         }

@@ -71,6 +71,7 @@ async def end_register(request: EndRegisterRequest, session : SessionDep):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
     if payload.purpose != 'registration':
         raise HTTPException(status_code=400, detail="Invalid token purpose")
+
     user = UserModel(
         full_name=request.full_name,
         phone=payload.phone,
@@ -78,7 +79,6 @@ async def end_register(request: EndRegisterRequest, session : SessionDep):
     session.add(user)
     await session.commit()
     await session.refresh(user)
-
     token = TokenService(session)
     refresh_token = await token.create_refresh_token(user_id=user.id, role=request.role)
     print("Refresh токен успешно создан", refresh_token.token, flush=True)

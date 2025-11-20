@@ -6,6 +6,7 @@ import RefreshHandler from "./components/RefreshHandler";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import RequestRegistration from "./components/RequestRegistration";
 import HomePage from "./components/HomePage";
+import Profile from "./components/Profile";
 
 function App(){
   return(
@@ -20,6 +21,7 @@ function App(){
           <Route path="/auth/end-register" element={<UserName />}></Route>
           <Route path="/request" element={<RequestRegistration />}></Route>
           <Route path="/home/*" element={<HomePage />}></Route>
+          <Route path="/profile" element={<Profile />}></Route> 
         </Routes>
     </Router>
   );

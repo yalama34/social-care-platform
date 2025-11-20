@@ -3,8 +3,9 @@ import {useNavigate} from "react-router-dom";
 import '../styles/request_registration.css';
 
 function RequestRegistration() {
+    const username = localStorage.getItem("full_name") || '';
     const [formData, setFormData] = useState({
-        fullName: '',
+        fullName: username,
         serviceType: '',
         address: '',
         comment: '',

@@ -1,4 +1,6 @@
 import re
+from typing import Optional
+
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import ForeignKey, String, Integer, DateTime, Boolean
@@ -21,6 +23,7 @@ class UserModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     full_name: Mapped[str] = mapped_column(String)
     phone: Mapped[str] = mapped_column(String, index=True)
+    about: Mapped[str] = mapped_column(String, default="")
 
 class RefreshToken(Base):
     __tablename__ = 'refresh_tokens'
@@ -61,7 +64,7 @@ class VerifyPhone(BaseModel):
 class EndRegisterRequest(BaseModel):
     full_name: str
     temp_token: str
-
+    role: str
     @field_validator('full_name')
     def validate_full_name(cls, value):
         if not re.match(r"^[А-ЯЁ][а-яё]+\s+[А-ЯЁ][а-яё]+$", value): #пока что регулярка только для стандартного ввода ФИО (без двойных фамилий, не подразумевает ввода только ФИ)

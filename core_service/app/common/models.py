@@ -1,4 +1,6 @@
 import re
+from typing import Optional
+
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import ForeignKey, String, Integer, DateTime, Boolean
@@ -21,6 +23,7 @@ class UserModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     full_name: Mapped[str] = mapped_column(String)
     phone: Mapped[str] = mapped_column(String, index=True)
+    about: Mapped[str] = mapped_column(String, default="")
 
 class RefreshToken(Base):
     __tablename__ = 'refresh_tokens'
@@ -42,7 +45,7 @@ class RequestModel(Base):
     comment: Mapped[str] = mapped_column(String)
     desired_time: Mapped[datetime.datetime] = mapped_column(DateTime)
     status: Mapped[str] = mapped_column(String, default="onwait")
-    volunteer_id: Mapped[int] = mapped_column(Integer, default=-1)
+    volunteer_id: Mapped[Optional[int]] = mapped_column(Integer, default=-1)
 
 #Requests models
 class PhoneRequest(BaseModel):
@@ -83,7 +86,6 @@ class RegisterRequest(BaseModel):
     service_type: str
     @field_validator('desired_time')
     def validate_desired_time(cls, value):
-        """Валидируем, что строка в формате ISO datetime"""
         try:
             from datetime import datetime
             datetime.fromisoformat(value)
