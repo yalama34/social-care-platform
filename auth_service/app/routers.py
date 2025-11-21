@@ -32,7 +32,7 @@ async def start_register(request: PhoneRequest, session : SessionDep):
     user = result.scalar()
     print("Найден пользователь:", user, flush=True)
     if user:
-        raise HTTPException(status_code=400, detail="Phone already registered")
+        raise HTTPException(status_code=400, detail="Номер телефона уже зарегистрирован")
     return {
         "code_sent": True,
         "phone": request.phone,
@@ -43,7 +43,7 @@ async def start_register(request: PhoneRequest, session : SessionDep):
 async def verify_phone(request: VerifyPhone, session: SessionDep) -> dict:
     """Проверка кода, создание временного токена для завершения регистрации"""
     if not request.code == "123456":
-        raise HTTPException(status_code=400, detail="Invalid code")
+        raise HTTPException(status_code=400, detail="Неверный код   ")
     is_login = await session.execute(select(UserModel).where(UserModel.phone == request.phone))
     is_login = is_login.scalar()
     if is_login:
@@ -69,9 +69,9 @@ async def end_register(request: EndRegisterRequest, session : SessionDep) -> dic
     try:
         payload = temp_security._decode_token(token=request.temp_token)
     except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        raise HTTPException(status_code=401, detail="Неверный или истёкший токен")
     if payload.purpose != 'registration':
-        raise HTTPException(status_code=400, detail="Invalid token purpose")
+        raise HTTPException(status_code=400, detail="Неверная причина выдачи токена")
 
     user = UserModel(
         full_name=request.full_name,
@@ -99,7 +99,7 @@ async def login(request: PhoneRequest, session : SessionDep) -> dict:
     user = result.scalar()
     print("Найден пользователь:", user, flush=True)
     if not user:
-        raise HTTPException(status_code=400, detail="User with number does not exist")
+        raise HTTPException(status_code=400, detail="Номер телефона не зарегистрирован")
 
     return {
         "code_sent": True,
@@ -112,9 +112,9 @@ async def login_end(request: EndLoginRequest, session : SessionDep) -> dict:
     try:
         payload = temp_security._decode_token(token=request.temp_token)
     except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        raise HTTPException(status_code=401, detail="Неверный или истёкший токен")
     if payload.purpose != 'login':
-        raise HTTPException(status_code=400, detail="Invalid token purpose")
+        raise HTTPException(status_code=400, detail="Неверная причина выдачи токена")
 
     data = await session.execute(select(UserModel).where(UserModel.phone == payload.phone))
     user = data.scalar()

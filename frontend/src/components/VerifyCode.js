@@ -7,6 +7,7 @@ function VerifyCode() {
     const navigate = useNavigate();
     const backendUrl = "http://localhost:8000";
     const role = localStorage.getItem("role");
+    let [errorMessage, setErrorMessage] = useState("");
     const handleValidateCode = async () => {
         if (!code.trim()){
             alert("Введите код");
@@ -23,10 +24,15 @@ function VerifyCode() {
                 phone: phone
             })
         })
+        if (!request.ok){
+            const errorData = await request.json();
+            setErrorMessage(errorData.detail || "Ошибка верификации кода");
+            return;
+        }
         const data=await request.json();
         if (data.verified){
             localStorage.setItem('temp_token', data.temp_token)
-            if (data.purpose === 'register'){
+            if (data.purpose === 'registration'){
                 navigate("/auth/end-register");
             }
             else if (data.purpose === 'login'){
@@ -34,7 +40,7 @@ function VerifyCode() {
             }
         }
         else{
-            alert('Ошибка');
+            setErrorMessage("Ошибка верификации кода");;
         }
     }
     const handleLogin = async (temp_token) => {
@@ -74,6 +80,7 @@ function VerifyCode() {
                           onChange={(e) => setCode(e.target.value)}
                           value={code}>
                         </input>
+                        <p className="error_message">{errorMessage || ""}</p>
                         <button className="button_code" onClick={handleValidateCode}>
                             Продолжить
                         </button>

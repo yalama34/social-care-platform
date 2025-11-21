@@ -1,8 +1,6 @@
-from email.header import Header
-
 from ..common.database import SessionDep
-from ..common.models import RegisterRequest, RequestModel, UserModel
-from fastapi import APIRouter, HTTPException, Depends
+from ..common.models import AboutRequest
+from fastapi import APIRouter, HTTPException, Depends, Header
 from datetime import timedelta, datetime
 from sqlalchemy import select
 from authx import AuthX, AuthXConfig
@@ -15,11 +13,10 @@ config = AuthXConfig(
 )
 security = AuthX(config=config)
 
-profile_router = APIRouter(tags=["profile"])
+profile_router = APIRouter(tags=["profile"], prefix="/profile")
 
-@profile_router.get("/profile")
+@profile_router.get("")
 async def get_user_profile(session: SessionDep, authorization: str =  Header(None)):
-    print(security._config.JWT_SECRET_KEY)
     if not authorization:
         raise HTTPException(status_code=401, detail="Token is not given")
     if not authorization.startswith("Bearer "):
@@ -30,3 +27,21 @@ async def get_user_profile(session: SessionDep, authorization: str =  Header(Non
     profile_service = ProfileService(session)
     profile_info = await profile_service.get_profile(access_token)
     return profile_info
+
+@profile_router.post("/about")
+async def update_about(session: SessionDep, request: AboutRequest, authorization: str = Header(None)):
+    print(authorization)
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Token is not given")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid token format")
+    access_token = authorization.split()[1]
+
+    access_token = security._decode_token(token=access_token)
+    profile_service = ProfileService(session)
+    await profile_service.change_about(access_token=access_token, about=request.about)
+    return {
+        "success": True
+    }
+
+

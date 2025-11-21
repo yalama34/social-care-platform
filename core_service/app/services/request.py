@@ -37,3 +37,34 @@ class RequestService:
         self.session.add(user_request)
         await self.session.commit()
         await self.session.refresh(user_request)
+    async def get_volunteer_name(self, volunteer_id):
+        result = await self.session.execute(
+            select(UserModel).where(UserModel.id == volunteer_id)
+        )
+        user = result.scalar()
+        if not user:
+            return ""
+        volunteer_name = user.full_name
+        return volunteer_name
+    async def edit_request_status(self, request_id, status):
+        result = await self.session.execute(
+            select(RequestModel).where(RequestModel.id == request_id)
+        )
+        request = result.scalar()
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+        request.status = status
+        if status == "onwait":
+            request.volunteer_id = -1
+        self.session.add(request)
+        await self.session.commit()
+        await self.session.refresh(request)
+    async def delete_request(self, request_id):
+        result = await self.session.execute(
+            select(RequestModel).where(RequestModel.id == request_id)
+        )
+        request = result.scalar()
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+        await self.session.delete(request)
+        await self.session.commit()

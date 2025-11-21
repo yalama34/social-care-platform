@@ -8,7 +8,7 @@ class ProfileService():
     def __init__(self, session):
         self.session = session
 
-    async def get_profile(self, access_token):
+    async def get_profile(self, access_token) -> dict:
         data = await self.session.execute(select(UserModel).where(UserModel.id == access_token.user_id))
         user = data.scalar()
         role = access_token.role
@@ -20,3 +20,10 @@ class ProfileService():
             "phone": user.phone,
             "about": user.about
         }
+    async def change_about(self, access_token, about: str) -> None:
+        data = await self.session.execute(select(UserModel).where(UserModel.id == access_token.user_id))
+        user = data.scalar()
+        user.about = about
+        self.session.add(user)
+        await self.session.commit()
+        self.session.refresh(user)

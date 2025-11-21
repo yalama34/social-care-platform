@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import { Link, replace, useNavigate} from 'react-router-dom';
 import '../styles/auth_page.css'
 
@@ -9,6 +9,7 @@ function AuthApp(){
     let link_text = "";
     const backendUrl = "http://localhost:8000";
     let [phone, setPhone] = useState("");
+    let [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
     if (cur_adress == "/auth/login-start"){
         login_p = "Вход";
@@ -21,6 +22,7 @@ function AuthApp(){
     }
 
     const handleSendCode = async () => {
+        setErrorMessage("");
         if (!phone.trim()) {
             alert("Введите номер телефона");
             return;
@@ -32,16 +34,30 @@ function AuthApp(){
             },
             body: JSON.stringify({phone: phone.trim()})
         })
-        const data = await request.json();
-
-        if (data.code_sent){
-            localStorage.setItem("phone", phone.trim())
-            navigate("/auth/verify-phone");
+        if (!request.ok){
+            if (request.status === 422){
+                setErrorMessage("Неверный формат номера телефона");
+                return;
+            }
+            const errorData = await request.json();
+            setErrorMessage(errorData.detail || "Ошибка запроса");
+            return;
         }
         else{
-            alert('Ошибка');
+            const data = await request.json();
+
+            if (data.code_sent){
+                localStorage.setItem("phone", phone.trim())
+                navigate("/auth/verify-phone");
+            }
+            else{
+                alert('Ошибка');
+            }
         }
     }
+    useEffect(() => {
+        setErrorMessage("");
+    }, [phone]);
 
     
 
@@ -67,6 +83,7 @@ function AuthApp(){
                             onChange={(e) => setPhone(e.target.value)} 
                             value={phone}>
                         </input>
+                        <p className="error_message">{errorMessage || ""}</p>
                         <button className="button_code" onClick={handleSendCode}>
                             Отправить код
                         </button>

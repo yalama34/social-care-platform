@@ -1,40 +1,55 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
 
-* {
+.home-page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: white;
     font-family: 'Jost', sans-serif;
+}
+
+.home-page-container * {
+    box-sizing: border-box;
 }
 
 .div-header {
     background-color: #FFE851;
     padding: 20px;
-    text-align: left;
-    border-bottom: 3px solid #000;
+    text-align: center;
+    width: 100%;
 }
 
 .p-header {
     margin: 0;
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 800;
+    color: #000;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 20px;
+    background-color: white;
+}
+
+.section {
+    margin-bottom: 30px;
 }
 
 .p-bold {
     font-weight: 700;
     font-size: 22px;
-    margin: 30px 0 20px 0;
+    margin-bottom: 20px;
     color: #000;
 }
 
-.requests-div {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 30px 20px;
-}
-
 .requests-grid {
-    display: grid;
+    display: flex;
     flex-direction: row;
     gap: 15px;
+    flex-wrap: wrap;
     margin-bottom: 20px;
 }
 
@@ -43,12 +58,18 @@
     border-radius: 12px;
     padding: 15px;
     min-height: 80px;
-    width: max-content;
+    min-width: 200px;
+    flex: 1;
+    max-width: 300px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+    gap: 8px;
+}
+
+.request-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
 }
 
 .empty-state {
@@ -56,6 +77,12 @@
     color: #999;
     font-size: 16px;
     margin: 20px 0;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin: 30px 0;
 }
 
 .request-button {
@@ -71,25 +98,64 @@
     border-radius: 50px;
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
-    align-self: center;
-    margin: 20px 0;
 }
 
-.contact-section {
-    background-color: #e0e0e0;
+.footer {
+    background-color: #333;
     padding: 20px;
-    text-align: center;
-    border-top: 1px solid #ccc;
+    width: 100%;
     margin-top: auto;
 }
 
-.contact-text {
+.footer-text {
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 400;
     margin: 0;
-    color: #333;
+    color: white;
 }
 
+.request-details-button {
+    margin-top: 12px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background-color: white;
+    color: #000;
+    font-size: 14px;
+    font-weight: 600;
 
+/*TO-DO: keyframe animations */
+}
+   .request-detailed-overlay {
+       position: fixed;
+       top: 0;
+       left: 0;
+       right: 0;
+       bottom: 0;
+       background-color: rgba(0, 0, 0, 0.4);
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       z-index: 1000;
+       backdrop-filter: blur(4px);
+   }
 
+   .request-detailed {
+       background-color: #fff;
+       border-radius: 16px;
+       padding: 24px;
+       width: min(500px, 90%);
+       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+       position: relative;
+   }
+
+   .detailed-close {
+       position: absolute;
+       top: 12px;
+       right: 12px;
+       border: none;
+       background: none;
+       font-size: 24px;
+       cursor: pointer;
+       color: #333;
+   }

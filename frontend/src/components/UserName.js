@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React,{useState, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
 import '../styles/auth_page.css'
 
@@ -6,6 +6,7 @@ function UserName() {
     const [username, setUsername] = useState('');
     const navigate = useNavigate();
     const backendUrl = "http://localhost:8000";
+    let [errorMessage, setErrorMessage] = useState("");
     const handleUsername = async () => {
         if (!username.trim()){
             alert("Введите Имя");
@@ -24,6 +25,15 @@ function UserName() {
                     role: role
                 })
             })
+            if (!request.ok){
+                if (request.status === 422){
+                    setErrorMessage("Неверный формат имени");
+                    return;
+                }
+                const errorData = await request.json();
+                setErrorMessage(errorData.detail || "Ошибка при установке имени");
+                return;
+            }
             const data=await request.json();
             localStorage.removeItem('phone');
             localStorage.removeItem('temp_token');
@@ -32,6 +42,9 @@ function UserName() {
             alert(data.access_token);
             navigate(`/home/${role}`);
         }
+    useEffect(() => {
+        setErrorMessage("");
+    }, [username]);
     return(
         <div style={{
                     backgroundImage: "none",
@@ -54,6 +67,7 @@ function UserName() {
                           onChange={(e) => setUsername(e.target.value)}
                           value={username}>
                         </input>
+                        <p className="error_message">{errorMessage || ""}</p>
                         <button className="button_code" onClick={handleUsername}>
                             Продолжить
                         </button>
