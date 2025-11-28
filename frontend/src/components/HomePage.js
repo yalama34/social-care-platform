@@ -1,6 +1,7 @@
 import { React, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/home_page.css";
+import Message from "./Message";
 
 function HomePage() {
     const [activeRequests, setActiveRequests] = useState([]);
@@ -9,6 +10,11 @@ function HomePage() {
     const [error, setError] = useState(null);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [isDetailedOpen, setIsDetailedOpen] = useState(false);
+    const [messages, setMessages] = useState([]);
+    const [message, setMessage] = useState('');
+    const [ws, SetWs] = useState(null);
+    const [isConnected, setIsConnected] = useState(false);
+    const [requestId, setRequestId] = useState("")
     const role = localStorage.getItem("role");
 
     const getRequests = async () => {
@@ -35,10 +41,6 @@ function HomePage() {
         }
     };
 
-    useEffect(() => {
-        getRequests();
-    }, []);
-
     const serviceType = {
         cleaning: "Уборка",
         rubbish: "Вынос мусора",
@@ -63,6 +65,13 @@ function HomePage() {
     const closeDetailed = () => {
         setSelectedRequest(null);
         setIsDetailedOpen(false);
+        setRequestId("")
+        setMessages([])
+        if (ws) {
+            ws.close();
+            SetWs(null);
+        };
+        setIsConnected(false);
     };
 
     const formatDateTime = (value) => {
@@ -88,7 +97,7 @@ function HomePage() {
             }
         })
         setIsDetailedOpen(false);
-        window.location.reload();
+        await getRequests();
     }
 
     const confirmCompletion = async (requestId) => {
@@ -102,7 +111,7 @@ function HomePage() {
             }
         })
         setIsDetailedOpen(false);
-        window.location.reload();
+        await getRequests();
     }
 
     const cancelRequest = async (requestId) => {
@@ -116,7 +125,7 @@ function HomePage() {
             }
         })
         setIsDetailedOpen(false);
-        window.location.reload();
+        await getRequests();
     }
 
     const renderRequests = (list, sectionTitle) => {
@@ -172,6 +181,68 @@ function HomePage() {
         }
     };
 
+    const getChatHistory = async (requestId) => {
+        const access_token = localStorage.getItem("access_token");
+        const backendUrl = "http://localhost:8001";
+        if (!access_token) {
+            setMessages([]);
+            return;
+        }
+
+        const response = await fetch(backendUrl + `/chat/history/${requestId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${access_token}`,
+            },
+        });
+        const data = await response.json();
+        setMessages(data.messages || []);
+    }
+
+    const sendMessage = () => {
+        if (!ws || ws.readyState !== WebSocket.OPEN || !message.trim()) {
+            return;
+        }
+        ws.send(message.trim());
+        setMessage('');
+    }
+
+    useEffect(() => {
+        getRequests();
+    }, []);
+
+    useEffect(() => {
+        if (!selectedRequest) return;
+        const access_token = localStorage.getItem("access_token");
+        const socket = new WebSocket(`ws://localhost:8001/ws/${role}/${selectedRequest.id}?access_token=${access_token}`);
+        SetWs(socket);
+        setRequestId(selectedRequest.id);
+        getChatHistory(selectedRequest.id);
+
+        socket.onopen = () => setIsConnected(true);
+
+        socket.onmessage = (event) => {
+            const [role, message] = event.data.split("-");
+            setMessages(prev => {
+                const nextMessages = [...prev, { role, message }];
+                return nextMessages;
+            });
+        };
+
+        socket.onerror = () => {
+            console.error("WebSocket error");
+            setIsConnected(false);
+        };
+        socket.onclose = () => setIsConnected(false);
+
+        return () => {
+            socket.close();
+            SetWs(null);
+            setIsConnected(false);
+        };
+    }, [role, isDetailedOpen, selectedRequest]);
+
     return (
         <div className="home-page-container">
             <div className="div-header">
@@ -211,54 +282,101 @@ function HomePage() {
             {isDetailedOpen && selectedRequest && (
                 <div className="request-detailed-overlay" onClick={closeDetailed}>
                     <div
-                        className="request-detailed"
+                        className="request-detailed-layout"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <button className="detailed-close" onClick={closeDetailed}>
-                            ×
-                        </button>
-                        <h2>
-                            Заявка #{selectedRequest.id} (
-                            {serviceStatus[selectedRequest.status]})
-                        </h2>
-                        <p>
-                            <strong>Тип услуги: </strong>
-                            {serviceType[selectedRequest.service_type]}
-                        </p>
-                        <p>
-                            <strong>Адрес: </strong>
-                            {selectedRequest.address}
-                        </p>
-                        <p>
-                            <strong>Комментарий: </strong>
-                            {selectedRequest.comment || "Нет комментария"}
-                        </p>
-                        <p>
-                            <strong>Желаемое время: </strong>
-                            {formatDateTime(selectedRequest.desired_time)}
-                        </p>
-                        {role === "user" ? (
+                        <div className="request-detailed">
+                            <button className="detailed-close" onClick={closeDetailed}>
+                                ×
+                            </button>
+                            <h2>
+                                Заявка #{selectedRequest.id} (
+                                {serviceStatus[selectedRequest.status]})
+                            </h2>
                             <p>
-                                <strong>Волонтёр: </strong>
-                                {selectedRequest.volunteer_name || "Не назначен"}
+                                <strong>Тип услуги: </strong>
+                                {serviceType[selectedRequest.service_type]}
                             </p>
-                        ) : (
                             <p>
-                                <strong>Заказчик: </strong>
-                                {selectedRequest.full_name}
+                                <strong>Адрес: </strong>
+                                {selectedRequest.address}
                             </p>
-                        )}
-                        {role === "user" ? (
-                            <div>
-                                <button onClick={async () => deleteRequest(selectedRequest.id)}>Удалить</button>
-                                <button onClick={async () => confirmCompletion(selectedRequest.id)}>Подтвердить выполнение</button>
-                            </div>
-                        ): (
-                            <div>
-                                <button onClick={async () => cancelRequest(selectedRequest.id)}>Отказаться</button>
-                            </div>
-                        )}
+                            <p>
+                                <strong>Комментарий: </strong>
+                                {selectedRequest.comment || "Нет комментария"}
+                            </p>
+                            <p>
+                                <strong>Желаемое время: </strong>
+                                {formatDateTime(selectedRequest.desired_time)}
+                            </p>
+                            {role === "user" ? (
+                                <p>
+                                    <strong>Волонтёр: </strong>
+                                    {selectedRequest.volunteer_name || "Не назначен"}
+                                </p>
+                            ) : (
+                                <p>
+                                    <strong>Заказчик: </strong>
+                                    {selectedRequest.full_name}
+                                </p>
+                            )}
+                            {role === "user" || !(selectedRequest.status === "completed") ? (
+                                (!(selectedRequest.status === "completed")) ? (
+                                    <div className="detailed-actions">
+                                        <button onClick={async () => deleteRequest(selectedRequest.id)}>Удалить</button>
+                                        <button onClick={async () => confirmCompletion(selectedRequest.id)}>Подтвердить выполнение</button>
+                                    </div>
+                                ) : (
+                                    <div className="detailed-actions">
+                                        <button>Оценить</button>
+                                    </div>
+                                )
+                            ): (
+                                (!(selectedRequest.status === "completed")) ? (
+                                    <div className="detailed-actions">
+                                        <button onClick={async () => cancelRequest(selectedRequest.id)}>Отказаться</button>
+                                    </div>
+                                ) : (
+                                    <div className="detailed-actions">
+                                        <button>Оценить</button>
+                                    </div>
+                                )
+                            )}
 
+                        </div>
+                        <div className="chat-panel">
+                            <div className="chat-header">
+                                <p className="chat-title">Чат заявки</p>
+                                <span className={`chat-status ${isConnected ? "online" : "offline"}`}>
+                                    {isConnected ? "в сети" : "нет подключения"}
+                                </span>
+                            </div>
+                            <div className="chat-window">
+                                {messages.length === 0 ? (
+                                    <p className="chat-empty">Сообщений пока нет</p>
+                                ) : (
+                                    messages.map((mess, index) => (
+                                        <Message key={`${mess.role}-${index}`} mess={mess} />
+                                    ))
+                                )}
+                            </div>
+                            <div className="chat-input">
+                                <input
+                                    type="text"
+                                    className="message-input"
+                                    value={message}
+                                    placeholder="Введите сообщение..."
+                                    onChange={e => setMessage(e.target.value)}
+                                />
+                                <button
+                                    className="send-button"
+                                    onClick={sendMessage}
+                                    disabled={!isConnected || !message.trim() || !(selectedRequest.status === "in_progress") }
+                                >
+                                    Отправить
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

@@ -2,7 +2,11 @@ from datetime import datetime, timedelta
 import secrets
 from sqlalchemy import select
 from shared.models import RefreshToken
+import random
+import os
+import httpx
 
+SMSPILOT_API_KEY = os.getenv("SMSPILOT_API_KEY")
 
 class TokenService():
     def __init__(self, session):
@@ -52,6 +56,26 @@ class TokenService():
         if updated_token is not None:
             updated_token.expires_at = expires_at
             await self.session.commit()
+
+class SmsService():
+    def __init__(self, session):
+        self.session = session
+
+    def generate_code(self) -> str:
+        return "".join([str(random.randint(0, 9)) for _ in range(6)])
+
+    async def send_sms(phone: str, code: str) -> bool:
+        url = "https://smspilot.ru/api.php"
+        params = {
+            "send": phone,
+            "message": f"Ваш код подтверждения: {code}",
+            "api_key": SMSPILOT_API_KEY,
+            "format": "json",
+        }
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params)
+            data = response.json()
+            return data.get("status") == "OK"
 
 
 

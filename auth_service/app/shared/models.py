@@ -47,6 +47,16 @@ class RequestModel(Base):
     status: Mapped[str] = mapped_column(String, default="onwait")
     volunteer_id: Mapped[int] = mapped_column(Integer, default=-1)
 
+
+class ChatModel(Base):
+    __tablename__ = 'chats'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    request_id: Mapped[int] = mapped_column(ForeignKey('requests.id'))
+    role: Mapped[str] = mapped_column(default="user")
+    message: Mapped[str] = mapped_column(String)
+    created_at: Mapped[datetime.datetime] = mapped_column(default=func.now())
+
+
 #Requests models
 class PhoneRequest(BaseModel):
     phone: str
