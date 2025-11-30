@@ -317,3 +317,21 @@
     color: #222;
     word-break: break-word;
 }
+
+.complaint-button {
+    background-color: #fff0f0;
+    border: 1px solid #ffcccc;
+    color: #d93025;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Jost', sans-serif;
+}
+
+.complaint-button:hover {
+    background-color: #ffe5e5;
+    border-color: #ff9999;
+}
