@@ -53,6 +53,7 @@ function VerifyCode() {
         })
         const data = await request.json()
         localStorage.setItem("access_token", data.access_token)
+        localStorage.setItem("role", data.role);
         localStorage.removeItem('phone');
         localStorage.removeItem('temp_token');
         navigate(`/home/${role}`);

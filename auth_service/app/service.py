@@ -50,32 +50,13 @@ class TokenService():
         return "TEMPLATE"
     async def update_refresh_token(self, token: str) -> None:
         expires_at = datetime.now() + timedelta(weeks=2)
-        updated_token = select(RefreshToken).where(
+        result = await self.session.execute(select(RefreshToken).where(
             RefreshToken.token == token,
-        )
-        if updated_token is not None:
+        ))
+        updated_token = result.scalar()
+        if updated_token:
             updated_token.expires_at = expires_at
             await self.session.commit()
-
-class SmsService():
-    def __init__(self, session):
-        self.session = session
-
-    def generate_code(self) -> str:
-        return "".join([str(random.randint(0, 9)) for _ in range(6)])
-
-    async def send_sms(phone: str, code: str) -> bool:
-        url = "https://smspilot.ru/api.php"
-        params = {
-            "send": phone,
-            "message": f"Ваш код подтверждения: {code}",
-            "api_key": SMSPILOT_API_KEY,
-            "format": "json",
-        }
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url, params=params)
-            data = response.json()
-            return data.get("status") == "OK"
 
 
 

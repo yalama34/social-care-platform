@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Header
-from routers import router, security
+from routers import router, security, config
 from shared.database import engine, SessionDep
 from shared.models import Base
 from shared.models import UserModel, RefreshToken
@@ -8,6 +8,7 @@ from service import TokenService
 from datetime import datetime
 from sqlalchemy import select
 from fastapi.middleware.cors import CORSMiddleware
+import jwt
 
 
 
@@ -43,16 +44,24 @@ async def check_session(session: SessionDep, authorization: str = Header(None)) 
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid token format")
     access_token = authorization.split()[1]
-    access_token = security._decode_token(token=access_token)
+    try:
+        access_token = jwt.decode(
+            access_token,
+            config.JWT_SECRET_KEY,
+            algorithms=["HS256"],
+            options={"verify_exp": False}
+        )
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
     result = await session.execute(
-        select(UserModel).where(UserModel.id == access_token.user_id)
+        select(UserModel).where(UserModel.id == access_token.get("user_id"))
     )
     user = result.scalar()
     if not user:
         return {
             "session_active": False,
         }
-    if access_token.expires_at < int(datetime.now().timestamp()):
+    if access_token.get("expires_at") < int(datetime.now().timestamp()):
         token = TokenService(session)
         refresh_token = await session.execute(select(RefreshToken).where(RefreshToken.user_id == user.id))
         check_refresh_token = await token.validate_refresh_token(refresh_token.token)

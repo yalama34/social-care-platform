@@ -28,7 +28,10 @@ function RefreshHandler() {
         const data = await response.json();
 
         if (data.session_active) {
-            navigate(`/home/${role}`);
+          if (data.access_token) {
+              localStorage.setItem("access_token", data.access_token);
+            }
+          navigate(`/home/${role}`);
         } else {
           navigate("/auth");
         }

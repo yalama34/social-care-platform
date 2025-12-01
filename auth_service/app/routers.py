@@ -116,13 +116,14 @@ async def login_end(request: EndLoginRequest, session : SessionDep) -> dict:
     if payload.purpose != 'login':
         raise HTTPException(status_code=400, detail="Неверная причина выдачи токена")
 
-    data = await session.execute(select(UserModel).where(UserModel.phone == payload.phone))
+    data = await session.execute(select(RefreshToken).where(UserModel.phone == payload.phone))
     user = data.scalar()
     token = TokenService(session)
-    await token.update_refresh_token(user.id)
-    access_token = await token.create_access_token(user_id=user.id, security=security)
+    access_token = await token.create_access_token(user_id=user.user_id, security=security)
+    await token.update_refresh_token(access_token)
     return {
         "access_token": access_token,
+        "role": user.role,
     }
 
 
