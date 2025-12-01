@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
+
+.profile-page {
+    min-height: 100vh;
+    background-color: white;
+    font-family: 'Jost', sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-page * {
+    box-sizing: border-box;
+}
+
+.profile-header {
+    background-color: #FFE851;
+    padding: 24px 32px;      
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #000;
+    margin: 0;
+    text-align: center;
+}
+
+.profile-back {
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: underline;
+    color: #000;
+    position: absolute;
+    left: 32px;
+}
+
+.profile-content {
+    padding: 24px 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.profile-card {
+    width: 100%;
+    max-width: 420px;
+    background-color: #fdfdfd;
+    border-radius: 16px;
+    border: 1px solid #e0e0e0;
+    padding: 20px 18px;
+}
+
+.profile-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+}
+
+.profile-role {
+    font-size: 14px;
+    color: #555;
+    margin: 0 0 16px 0;
+}
+
+.profile-section {
+    margin-top: 16px;
+}
+
+.profile-label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.profile-text {
+    font-size: 14px;
+    margin: 0 0 10px 0;
+}
+
+.profile-textarea {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #dcdcdc;
+    padding: 8px 10px;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.profile-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.profile-btn {
+    flex: 1;
+    border-radius: 999px;
+    border: none;
+    padding: 8px 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Jost', sans-serif;
+}
+
+.profile-btn.primary {
+    background-color: #6E6E6E;
+    color: white;
+}
+
+.profile-btn.secondary {
+    background-color: #ffffff;
+    color: #000;
+    border: 1px solid #cccccc;
+}
+
+.profile-loading {
+    font-size: 14px;
+}
