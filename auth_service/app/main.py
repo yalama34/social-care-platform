@@ -64,6 +64,7 @@ async def check_session(session: SessionDep, authorization: str = Header(None)) 
     if access_token.get("expires_at") < int(datetime.now().timestamp()):
         token = TokenService(session)
         refresh_token = await session.execute(select(RefreshToken).where(RefreshToken.user_id == user.id))
+        refresh_token = refresh_token.scalar()
         check_refresh_token = await token.validate_refresh_token(refresh_token.token)
         if not check_refresh_token:
             if not refresh_token.is_revoked:
@@ -72,14 +73,16 @@ async def check_session(session: SessionDep, authorization: str = Header(None)) 
                 }
             else:
                 raise HTTPException(status_code=403, detail="You have been banned")
-        new_access_token = await token.create_access_token(user_id=user.id, security=security)
+        new_access_token = await token.create_access_token(user_id=user.id, security=security, role=user.role)
         return {
             "session_active": True,
             "access_token": new_access_token,
+            "role": refresh_token.role,
         }
     return{
         "session_active": True,
         "access_token": access_token,
+        "role": access_token.role,
     }
 
 

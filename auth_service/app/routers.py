@@ -119,7 +119,7 @@ async def login_end(request: EndLoginRequest, session : SessionDep) -> dict:
     data = await session.execute(select(RefreshToken).where(UserModel.phone == payload.phone))
     user = data.scalar()
     token = TokenService(session)
-    access_token = await token.create_access_token(user_id=user.user_id, security=security)
+    access_token = await token.create_access_token(user_id=user.user_id, security=security, role=user.role)
     await token.update_refresh_token(access_token)
     return {
         "access_token": access_token,
