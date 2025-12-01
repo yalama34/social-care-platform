@@ -31,6 +31,7 @@ function RefreshHandler() {
           if (data.access_token) {
               localStorage.setItem("access_token", data.access_token);
               localStorage.setItem("role", data.role);
+              localStorage.setItem("full_name", data.full_name);
             }
           navigate(`/home/${role}`);
         } else {

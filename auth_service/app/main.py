@@ -78,11 +78,13 @@ async def check_session(session: SessionDep, authorization: str = Header(None)) 
             "session_active": True,
             "access_token": new_access_token,
             "role": refresh_token.role,
+            "full_name": user.full_name,
         }
     return{
         "session_active": True,
         "access_token": access_token,
-        "role": access_token.role,
+        "role": access_token.get("role"),
+        "full_name": user.full_name,
     }
 
 

@@ -124,6 +124,7 @@ async def login_end(request: EndLoginRequest, session : SessionDep) -> dict:
     return {
         "access_token": access_token,
         "role": user.role,
+        "full_name": user.full_name,
     }
 
 
