@@ -159,6 +159,12 @@
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
     position: relative;
 }
+.request-detailed p {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    margin: 8px 0;
+}
 
 .detailed-close {
     position: absolute;
