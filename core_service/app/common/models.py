@@ -106,3 +106,8 @@ class RegisterRequest(BaseModel):
             return value
         except ValueError:
             raise ValueError(f"Invalid datetime format. Expected ISO format like '2025-11-17T12:00', got '{value}'")
+
+class ComplaintRequest(BaseModel):
+    complaint_text: str
+    sus_user_id: int
+    request_id: Optional[int] = None
