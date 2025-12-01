@@ -15,6 +15,8 @@ function HomePage() {
     const [ws, SetWs] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     const [requestId, setRequestId] = useState("")
+    const [complaintOpen, setComplaintOpen] = useState(false);
+    const [complaintText, setComplaintText] = useState("");
     const role = localStorage.getItem("role");
 
     const getRequests = async () => {
@@ -72,6 +74,22 @@ function HomePage() {
             SetWs(null);
         };
         setIsConnected(false);
+    };
+
+    const openComplaint = () => {
+        setIsDetailedOpen(false);
+        setComplaintOpen(true);
+    };
+
+    const closeComplaint = () => {
+        setComplaintOpen(false);
+        setIsDetailedOpen(true);
+        setComplaintText("");
+    };
+
+    const sendComplaint = () => {
+        alert(`Жалоба отправлена: ${complaintText}`);
+        closeComplaint();
     };
 
     const formatDateTime = (value) => {
@@ -289,6 +307,7 @@ function HomePage() {
                             <button className="detailed-close" onClick={closeDetailed}>
                                 ×
                             </button>
+
                             <h2>
                                 Заявка #{selectedRequest.id} (
                                 {serviceStatus[selectedRequest.status]})
@@ -342,14 +361,30 @@ function HomePage() {
                                     </div>
                                 )
                             )}
-
                         </div>
                         <div className="chat-panel">
                             <div className="chat-header">
                                 <p className="chat-title">Чат заявки</p>
-                                <span className={`chat-status ${isConnected ? "online" : "offline"}`}>
-                                    {isConnected ? "в сети" : "нет подключения"}
-                                </span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <span className={`chat-status ${isConnected ? "online" : "offline"}`}>
+                                        {isConnected ? "в сети" : "нет подключения"}
+                                    </span>
+                                    <button 
+                                        onClick={openComplaint}
+                                        style={{
+                                            background: 'none',
+                                            border: '1px solid #ccc',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            padding: '4px 8px',
+                                            fontSize: '0.9rem',
+                                            color: '#d32f2f'
+                                        }}
+                                        title="Пожаловаться"
+                                    >
+                                        Пожаловаться
+                                    </button>
+                                </div>
                             </div>
                             <div className="chat-window">
                                 {messages.length === 0 ? (
@@ -376,6 +411,35 @@ function HomePage() {
                                     Отправить
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {complaintOpen && selectedRequest && (
+                <div className="request-detailed-overlay" onClick={closeComplaint}>
+                     <div 
+                        className="request-detailed-layout" 
+                        style={{ height: 'auto', minHeight: '300px', display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2>Пожаловаться на заявку #{selectedRequest.id}</h2>
+                        <textarea
+                            className="complaint-textarea"
+                            value={complaintText}
+                            onChange={(e) => setComplaintText(e.target.value)}
+                            placeholder="Опишите проблему..."
+                            style={{
+                                width: '100%',
+                                height: '150px',
+                                padding: '10px',
+                                borderRadius: '8px',
+                                border: '1px solid #ccc',
+                                resize: 'none'
+                            }}
+                        />
+                        <div className="detailed-actions" style={{ justifyContent: 'flex-end', gap: '10px', marginTop: 'auto' }}>
+                            <button onClick={closeComplaint} style={{ backgroundColor: '#ccc', color: '#000' }}>Отмена</button>
+                            <button onClick={sendComplaint} style={{ backgroundColor: 'red', color: 'white' }}>Отправить жалобу</button>
                         </div>
                     </div>
                 </div>
