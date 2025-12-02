@@ -24,6 +24,7 @@ class UserModel(Base):
     full_name: Mapped[str] = mapped_column(String)
     phone: Mapped[str] = mapped_column(String, index=True)
     about: Mapped[str] = mapped_column(String, default="")
+    warnings: Mapped[int] = mapped_column(Integer, default=0)
 
 class RefreshToken(Base):
     __tablename__ = 'refresh_tokens'
@@ -106,3 +107,8 @@ class RegisterRequest(BaseModel):
             return value
         except ValueError:
             raise ValueError(f"Invalid datetime format. Expected ISO format like '2025-11-17T12:00', got '{value}'")
+
+class ComplaintRequest(BaseModel):
+    complaint_text: str
+    sus_user_id: int
+    request_id: Optional[int] = None

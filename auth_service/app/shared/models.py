@@ -24,6 +24,7 @@ class UserModel(Base):
     full_name: Mapped[str] = mapped_column(String)
     phone: Mapped[str] = mapped_column(String, index=True)
     about: Mapped[str] = mapped_column(String, default="")
+    warnings: Mapped[int] = mapped_column(Integer, default=0)
 
 class RefreshToken(Base):
     __tablename__ = 'refresh_tokens'

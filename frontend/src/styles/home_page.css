@@ -335,3 +335,271 @@
     background-color: #ffe5e5;
     border-color: #ff9999;
 }
+
+.complaint-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 400px;
+    max-width: 90vw;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.complaint-modal h2 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.complaint-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.complaint-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    color: #333;
+}
+
+.complaint-form select {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Jost', sans-serif;
+    background: white;
+    cursor: pointer;
+}
+
+.complaint-form textarea {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Jost', sans-serif;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.complaint-form textarea:focus,
+.complaint-form select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.complaint-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.complaint-actions .cancel-btn {
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #666;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.complaint-actions .cancel-btn:hover {
+    background: #f5f5f5;
+}
+
+.complaint-actions .submit-btn {
+    padding: 10px 20px;
+    border: none;
+    background: #d93025;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.complaint-actions .submit-btn:hover:not(:disabled) {
+    background: #c62828;
+}
+
+.complaint-actions .submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Verdict Modal */
+.verdict-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    width: 400px;
+    max-width: 90vw;
+    position: relative;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+    font-family: 'Jost', sans-serif;
+}
+
+.verdict-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.verdict-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #000;
+}
+
+.verdict-punishments {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.punishment-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f5f5f5;
+}
+
+.punishment-item.verdict-ban {
+    background: #ffebee;
+    border-left: 4px solid #e53935;
+}
+
+.punishment-item.verdict-warning {
+    background: #fff3e0;
+    border-left: 4px solid #fb8c00;
+}
+
+.punishment-item.verdict-innocent {
+    background: #e8f5e9;
+    border-left: 4px solid #43a047;
+}
+
+.punishment-icon {
+    font-size: 20px;
+}
+
+.punishment-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.punishment-verdict {
+    font-size: 14px;
+    font-weight: 700;
+    margin-left: auto;
+}
+
+.verdict-confidence {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 14px 16px;
+    background: #f5f5f5;
+    border-radius: 12px;
+}
+
+.confidence-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+}
+
+.confidence-bar-container {
+    flex: 1;
+    height: 10px;
+    background: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.confidence-bar {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.6s ease-out;
+    background: #FFE851;
+}
+
+.confidence-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #000;
+    min-width: 42px;
+    text-align: right;
+}
+
+.verdict-reasoning {
+    margin-bottom: 16px;
+}
+
+.verdict-reasoning h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000;
+}
+
+.verdict-reasoning p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+    padding: 14px;
+    background: #f5f5f5;
+    border-radius: 12px;
+}
+
+.verdict-note {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: #FFF9E6;
+    border-radius: 8px;
+    border: 1px solid #FFE851;
+}
+
+.verdict-close-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    background: #FFE851;
+    color: #000;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Jost', sans-serif;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.verdict-close-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}

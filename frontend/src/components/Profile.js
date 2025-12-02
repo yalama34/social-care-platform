@@ -1,7 +1,8 @@
-import {React, useState, useEffect, use} from "react";
-import {Link} from 'react-router-dom';
+import {React, useState, useEffect} from "react";
+import {Link, useParams} from 'react-router-dom';
 
 function Profile() {
+    const { user_id } = useParams();
     const [username, setUsername] = useState('');
     const [about, setAbout] = useState('');
     const [loading, setLoading] = useState(false);
@@ -12,11 +13,8 @@ function Profile() {
 
     const getProfileData = async () => {
         setLoading(true);
-        const request = await fetch(backendUrl + `/profile`, {
+        const request = await fetch(backendUrl + `/profile/${user_id}`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${access_token}`,
-            },
         })
         const data = await request.json();
         setProfileData(data);
@@ -27,7 +25,7 @@ function Profile() {
     }
     useEffect(() => {
         getProfileData();
-    }, []);
+    }, [user_id]);
     const renderAbout = () => {
         if (profileData && profileData.role === 'volunteer') {
             if (isEditing) {

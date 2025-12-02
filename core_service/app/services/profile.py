@@ -20,6 +20,19 @@ class ProfileService():
             "phone": user.phone,
             "about": user.about
         }
+
+    async def get_profile_by_id(self, user_id: int) -> dict:
+        data = await self.session.execute(select(UserModel).where(UserModel.id == user_id))
+        user = data.scalar()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return {
+            "id": user.id,
+            "role": user.role,
+            "full_name": user.full_name,
+            "phone": user.phone,
+            "about": user.about
+        }
     async def change_about(self, access_token, about: str) -> None:
         data = await self.session.execute(select(UserModel).where(UserModel.id == access_token.user_id))
         user = data.scalar()

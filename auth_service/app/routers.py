@@ -90,17 +90,23 @@ async def end_register(request: EndRegisterRequest, session : SessionDep) -> dic
         "access_token": access_token,
     }
 
+
 @router.post("/login-start")
-async def login(request: PhoneRequest, session : SessionDep) -> dict:
-    print("Получен номер:", request.phone, flush=True)
+async def login(request: PhoneRequest, session: SessionDep) -> dict:
     result = await session.execute(
         select(UserModel).where(UserModel.phone == request.phone)
     )
     user = result.scalar()
-    print("Найден пользователь:", user, flush=True)
     if not user:
         raise HTTPException(status_code=400, detail="Номер телефона не зарегистрирован")
 
+    # === ПРОВЕРКА БАНА ===
+    refresh_data = await session.execute(
+        select(RefreshToken).where(RefreshToken.user_id == user.id)
+    )
+    refresh_token = refresh_data.scalar()
+    if refresh_token and refresh_token.is_revoked:
+        raise HTTPException(status_code=403, detail="Ваш аккаунт заблокирован")
     return {
         "code_sent": True,
         "phone": request.phone,
