@@ -17,7 +17,7 @@ class ProfileService():
         return {
             "role": role,
             "full_name": user.full_name,
-            "phone": user.phone,
+            "email": user.email,
             "about": user.about
         }
 
@@ -28,9 +28,9 @@ class ProfileService():
             raise HTTPException(status_code=404, detail="User not found")
         return {
             "id": user.id,
-            "role": user.role,
+            "role": getattr(user, 'role', None),
             "full_name": user.full_name,
-            "phone": user.phone,
+            "email": user.email,
             "about": user.about
         }
     async def change_about(self, access_token, about: str) -> None:

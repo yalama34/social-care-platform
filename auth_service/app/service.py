@@ -1,12 +1,20 @@
 from datetime import datetime, timedelta
 import secrets
 from sqlalchemy import select
-from shared.models import RefreshToken
+from shared.models import RefreshToken, VerificationCode
 import random
 import os
 import httpx
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
-SMSPILOT_API_KEY = os.getenv("SMSPILOT_API_KEY")
+# Email configuration
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+EMAIL_FROM = os.getenv("EMAIL_FROM", SMTP_USER)
 
 class TokenService():
     def __init__(self, session):
@@ -48,34 +56,93 @@ class TokenService():
 
     async def get_permissions(self, role: str) -> str:
         return "TEMPLATE"
-    async def update_refresh_token(self, token: str) -> None:
+    async def update_refresh_token(self, user_id: int) -> None:
         expires_at = datetime.now() + timedelta(weeks=2)
-        updated_token = select(RefreshToken).where(
-            RefreshToken.token == token,
+        result = await self.session.execute(
+            select(RefreshToken).where(RefreshToken.user_id == user_id)
         )
+        updated_token = result.scalar_one_or_none()
         if updated_token is not None:
             updated_token.expires_at = expires_at
+            self.session.add(updated_token)
             await self.session.commit()
 
-class SmsService():
+class EmailService():
     def __init__(self, session):
         self.session = session
 
     def generate_code(self) -> str:
         return "".join([str(random.randint(0, 9)) for _ in range(6)])
 
-    async def send_sms(phone: str, code: str) -> bool:
-        url = "https://smspilot.ru/api.php"
-        params = {
-            "send": phone,
-            "message": f"Ваш код подтверждения: {code}",
-            "api_key": SMSPILOT_API_KEY,
-            "format": "json",
-        }
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url, params=params)
-            data = response.json()
-            return data.get("status") == "OK"
+    async def send_verification_code(self, email: str, code: str) -> bool:
+        """Отправка кода верификации на email через SMTP"""
+        try:
+            if not SMTP_USER or not SMTP_PASSWORD:
+                # Если SMTP не настроен, просто логируем (для разработки)
+                print(f"[EMAIL] Код верификации для {email}: {code}", flush=True)
+                return True
+            
+            # Создание сообщения
+            msg = MIMEMultipart()
+            msg['From'] = EMAIL_FROM
+            msg['To'] = email
+            msg['Subject'] = "Код подтверждения"
+            
+            body = f"""
+            Здравствуйте!
+            
+            Ваш код подтверждения: {code}
+            
+            Код действителен в течение 10 минут.
+            
+            Если вы не запрашивали этот код, проигнорируйте это письмо.
+            """
+            msg.attach(MIMEText(body, 'plain', 'utf-8'))
+            
+            # Отправка через SMTP
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SMTP_USER, SMTP_PASSWORD)
+                server.send_message(msg)
+            
+            print(f"[EMAIL] Код отправлен на {email}", flush=True)
+            return True
+        except Exception as e:
+            print(f"[EMAIL] Ошибка отправки на {email}: {e}", flush=True)
+            # В режиме разработки возвращаем True даже при ошибке
+            return True
+
+    async def save_verification_code(self, email: str, code: str) -> VerificationCode:
+        """Сохранение кода верификации в БД"""
+        expires_at = datetime.now() + timedelta(minutes=10)
+        verification_code = VerificationCode(
+            email=email,
+            code=code,
+            expires_at=expires_at
+        )
+        self.session.add(verification_code)
+        await self.session.commit()
+        await self.session.refresh(verification_code)
+        return verification_code
+
+    async def verify_code(self, email: str, code: str) -> bool:
+        """Проверка кода верификации"""
+        result = await self.session.execute(
+            select(VerificationCode).where(
+                VerificationCode.email == email,
+                VerificationCode.code == code,
+                VerificationCode.is_used == False,
+                VerificationCode.expires_at > datetime.now()
+            ).order_by(VerificationCode.created_at.desc())
+        )
+        verification = result.scalar_one_or_none()
+        
+        if verification:
+            verification.is_used = True
+            self.session.add(verification)
+            await self.session.commit()
+            return True
+        return False
 
 
 

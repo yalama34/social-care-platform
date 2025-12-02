@@ -10,7 +10,7 @@ from sqlalchemy.sql import func
 class User(BaseModel):
     id: int
     full_name: str
-    phone: str
+    email: str
     access_token: str
     refresh_token: str
 
@@ -22,7 +22,7 @@ class UserModel(Base):
     __tablename__ = 'users'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     full_name: Mapped[str] = mapped_column(String)
-    phone: Mapped[str] = mapped_column(String, index=True)
+    email: Mapped[str] = mapped_column(String, index=True, unique=True)
     about: Mapped[str] = mapped_column(String, default="")
     warnings: Mapped[int] = mapped_column(Integer, default=0)
 
@@ -58,17 +58,18 @@ class ChatModel(Base):
     
 
 #Requests models
-class PhoneRequest(BaseModel):
-    phone: str
+class EmailRequest(BaseModel):
+    email: str
 
-    @field_validator('phone')
-    def validate_phone_number(cls, value):
-        if not re.match(r'(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)', value):
-            raise ValueError('Invalid phone number')
-        return value
+    @field_validator('email')
+    def validate_email(cls, value):
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, value):
+            raise ValueError('Invalid email address')
+        return value.lower()
 
-class VerifyPhone(BaseModel):
-    phone: str
+class VerifyEmail(BaseModel):
+    email: str
     code: str
 
 class EndRegisterRequest(BaseModel):

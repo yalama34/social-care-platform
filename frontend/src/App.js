@@ -18,7 +18,7 @@ function App(){
           <Route path="/refresh" element={<RefreshHandler />}></Route>
           <Route path="/auth/login-start" element={<AuthPage />}></Route>
           <Route path="/auth/start-register" element={<AuthPage />}></Route>
-          <Route path="/auth/verify-phone" element={<VerifyCode />}></Route>
+          <Route path="/auth/verify-email" element={<VerifyCode />}></Route>
           <Route path="/auth/end-register" element={<UserName />}></Route>
           <Route path="/request" element={<RequestRegistration />}></Route>
           <Route path="/home/*" element={<HomePage />}></Route>

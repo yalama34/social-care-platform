@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from shared.models import PhoneRequest, VerifyPhone, EndRegisterRequest, EndLoginRequest
+from shared.models import EmailRequest, VerifyEmail, EndRegisterRequest, EndLoginRequest
 from authx import AuthX, AuthXConfig
-from service import TokenService
+from service import TokenService, EmailService
 from shared.database import SessionDep
 from datetime import timedelta, datetime
 from shared.models import UserModel, RefreshToken
@@ -23,41 +23,52 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 #регистрация
 @router.post("/start-register")
-async def start_register(request: PhoneRequest, session : SessionDep):
-    """Проверка, не был ли зарегестрирован пользователь ранее. Отправка кода по указанному номеру телефона."""
-    print("Получен номер:", request.phone, flush=True)
+async def start_register(request: EmailRequest, session : SessionDep):
+    """Проверка, не был ли зарегестрирован пользователь ранее. Отправка кода на указанный email."""
+    print("Получен email:", request.email, flush=True)
     result = await session.execute(
-        select(UserModel).where(UserModel.phone == request.phone)
+        select(UserModel).where(UserModel.email == request.email)
     )
     user = result.scalar()
     print("Найден пользователь:", user, flush=True)
     if user:
-        raise HTTPException(status_code=400, detail="Номер телефона уже зарегистрирован")
+        raise HTTPException(status_code=400, detail="Email уже зарегистрирован")
+    
+    # Генерация и отправка кода
+    email_service = EmailService(session)
+    code = email_service.generate_code()
+    await email_service.send_verification_code(request.email, code)
+    await email_service.save_verification_code(request.email, code)
+    
     return {
         "code_sent": True,
-        "phone": request.phone,
+        "email": request.email,
         "wait_time": datetime.now() + timedelta(seconds=60),
         }
 
-@router.post("/verify-phone")
-async def verify_phone(request: VerifyPhone, session: SessionDep) -> dict:
+@router.post("/verify-email")
+async def verify_email(request: VerifyEmail, session: SessionDep) -> dict:
     """Проверка кода, создание временного токена для завершения регистрации"""
-    if not request.code == "123456":
-        raise HTTPException(status_code=400, detail="Неверный код   ")
-    is_login = await session.execute(select(UserModel).where(UserModel.phone == request.phone))
+    email_service = EmailService(session)
+    is_valid = await email_service.verify_code(request.email, request.code)
+    
+    if not is_valid:
+        raise HTTPException(status_code=400, detail="Неверный код или код истёк")
+    
+    is_login = await session.execute(select(UserModel).where(UserModel.email == request.email))
     is_login = is_login.scalar()
     if is_login:
         purpose = "login"
     else:
         purpose = "registration"
     temp_token = temp_security.create_access_token(
-        uid = request.phone,
+        uid = request.email,
         data={
         'purpose': purpose,
-        'phone': request.phone,
+        'email': request.email,
         } #безопасность
     )
-    print("Получен номер:", request.phone)
+    print("Получен email:", request.email)
     return {
         "verified": True,
         "temp_token": temp_token,
@@ -75,7 +86,7 @@ async def end_register(request: EndRegisterRequest, session : SessionDep) -> dic
 
     user = UserModel(
         full_name=request.full_name,
-        phone=payload.phone,
+        email=payload.email,
     )
     session.add(user)
     await session.commit()
@@ -92,13 +103,13 @@ async def end_register(request: EndRegisterRequest, session : SessionDep) -> dic
 
 
 @router.post("/login-start")
-async def login(request: PhoneRequest, session: SessionDep) -> dict:
+async def login(request: EmailRequest, session: SessionDep) -> dict:
     result = await session.execute(
-        select(UserModel).where(UserModel.phone == request.phone)
+        select(UserModel).where(UserModel.email == request.email)
     )
     user = result.scalar()
     if not user:
-        raise HTTPException(status_code=400, detail="Номер телефона не зарегистрирован")
+        raise HTTPException(status_code=400, detail="Email не зарегистрирован")
 
     # === ПРОВЕРКА БАНА ===
     refresh_data = await session.execute(
@@ -107,9 +118,16 @@ async def login(request: PhoneRequest, session: SessionDep) -> dict:
     refresh_token = refresh_data.scalar()
     if refresh_token and refresh_token.is_revoked:
         raise HTTPException(status_code=403, detail="Ваш аккаунт заблокирован")
+    
+    # Генерация и отправка кода
+    email_service = EmailService(session)
+    code = email_service.generate_code()
+    await email_service.send_verification_code(request.email, code)
+    await email_service.save_verification_code(request.email, code)
+    
     return {
         "code_sent": True,
-        "phone": request.phone,
+        "email": request.email,
         "wait_time": 60,
     }
 
@@ -122,7 +140,7 @@ async def login_end(request: EndLoginRequest, session : SessionDep) -> dict:
     if payload.purpose != 'login':
         raise HTTPException(status_code=400, detail="Неверная причина выдачи токена")
 
-    data = await session.execute(select(UserModel).where(UserModel.phone == payload.phone))
+    data = await session.execute(select(UserModel).where(UserModel.email == payload.email))
     user = data.scalar()
     token = TokenService(session)
     await token.update_refresh_token(user.id)

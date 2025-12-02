@@ -264,7 +264,6 @@ const closeVerdict = async () => {
     if (verdictResult.confidence >= 90) {
         const backendUrl = "http://localhost:8001";
         const access_token = localStorage.getItem("access_token");
-        
         for (const punishment of verdictResult.punishments) {
             if (punishment.verdict !== "innocent") {
                 await fetch(backendUrl + `/verdict/${punishment.verdict}/${punishment.user_id}`, {

@@ -13,15 +13,15 @@ function VerifyCode() {
             alert("Введите код");
         return;
     }
-        const phone = localStorage.getItem('phone');
-        const request=await fetch(backendUrl + "/auth/verify-phone",{
+        const email = localStorage.getItem('email');
+        const request=await fetch(backendUrl + "/auth/verify-email",{
             method:'POST',
             headers:{
                 'Content-type': 'application/json'
             },
             body: JSON.stringify({
                 code: code.trim(),
-                phone: phone
+                email: email
             })
         })
         if (!request.ok){
@@ -53,7 +53,7 @@ function VerifyCode() {
         })
         const data = await request.json()
         localStorage.setItem("access_token", data.access_token)
-        localStorage.removeItem('phone');
+        localStorage.removeItem('email');
         localStorage.removeItem('temp_token');
         navigate(`/home/${role}`);
     }
@@ -72,11 +72,11 @@ function VerifyCode() {
             <>
                 <div className="auth_block">
                     <p className="login_p">Ввод кода</p>
-                    <p className="phone_p">SMS-код</p>
+                    <p className="phone_p">Код подтверждения</p>
                     <div className="container_phone">
                         <input type="text"
                          className="input_phone"
-                          placeholder="Введите код из SMS"
+                          placeholder="Введите код из email"
                           onChange={(e) => setCode(e.target.value)}
                           value={code}>
                         </input>
