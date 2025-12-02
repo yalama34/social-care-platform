@@ -112,7 +112,6 @@ async def request_moderation(
         "role": sus_role
     }
 
-
     analyze = AnalysisService()
     ai_response = await analyze.analyze(
         complaint_type=complaint_type,
