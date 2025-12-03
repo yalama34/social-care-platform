@@ -8,6 +8,7 @@ from .routers.websocket import ws_router
 from .routers.chat import chat_router
 from .routers.moderation import moderation_router
 from .routers.verdict import verdict_router
+from .routers.rating import rating_router
 
 app = FastAPI()
 app.add_middleware(
@@ -26,6 +27,8 @@ app.include_router(ws_router)
 app.include_router(chat_router)
 app.include_router(moderation_router)
 app.include_router(verdict_router)
+app.include_router(rating_router)
+
 """
 if __name__ == "__main__":
     import uvicorn
