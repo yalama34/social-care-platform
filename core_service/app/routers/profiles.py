@@ -15,17 +15,18 @@ security = AuthX(config=config)
 
 profile_router = APIRouter(tags=["profile"], prefix="/profile")
 
-@profile_router.get("")
-async def get_user_profile(session: SessionDep, authorization: str =  Header(None)):
+@profile_router.get("/{user_id}")
+async def get_user_profile(user_id: int, session: SessionDep, authorization: str =  Header(None)):
     if not authorization:
         raise HTTPException(status_code=401, detail="Token is not given")
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid token format")
     access_token = authorization.split()[1]
-    print(access_token)
+
     access_token = security._decode_token(token=access_token)
+    access_user_id = access_token.user_id
     profile_service = ProfileService(session)
-    profile_info = await profile_service.get_profile(access_token)
+    profile_info = await profile_service.get_profile_by_id(user_id, access_user_id)
     return profile_info
 
 @profile_router.post("/about")

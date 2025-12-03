@@ -23,7 +23,7 @@ function App(){
           <Route path="/request" element={<RequestRegistration />}></Route>
           <Route path="/home/*" element={<HomePage />}></Route>
           <Route path="/request-feed" element={<RequestFeed />}></Route>
-          <Route path="/profile" element={<Profile />}></Route> 
+          <Route path="/profile/:user_id" element={<Profile />}></Route> 
         </Routes>
     </Router>
   );

@@ -8,6 +8,7 @@ function Profile() {
     const [loading, setLoading] = useState(false);
     const [profileData, setProfileData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [ableEditing, setAbleEditing] = useState(true);
     const backendUrl = "http://localhost:8001";
     const access_token = localStorage.getItem("access_token");
 
@@ -15,19 +16,25 @@ function Profile() {
         setLoading(true);
         const request = await fetch(backendUrl + `/profile/${user_id}`, {
             method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${access_token}` 
+            },
         })
         const data = await request.json();
         setProfileData(data);
         setUsername(data.full_name);
         setAbout(data.about || '');
         setLoading(false);
+        if (data.id != data.access_id){
+            setAbleEditing(false);
+        }
 
     }
     useEffect(() => {
         getProfileData();
     }, [user_id]);
     const renderAbout = () => {
-        if (profileData && profileData.role === 'volunteer') {
+        if (profileData && profileData.role === 'volunteer' && ableEditing) {
             if (isEditing) {
                 return (
                     <div>

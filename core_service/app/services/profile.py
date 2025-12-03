@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import secrets
 from sqlalchemy import select
-from ..common.models import RequestModel, UserModel, RegisterRequest
+from ..common.models import RequestModel, UserModel, RegisterRequest, RefreshToken
 from fastapi import HTTPException
 
 class ProfileService():
@@ -21,14 +21,20 @@ class ProfileService():
             "about": user.about
         }
 
-    async def get_profile_by_id(self, user_id: int) -> dict:
+    async def get_profile_by_id(self, user_id: int, access_user_id: int) -> dict:
         data = await self.session.execute(select(UserModel).where(UserModel.id == user_id))
         user = data.scalar()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+        token_result = await self.session.execute(
+            select(RefreshToken).where(RefreshToken.user_id == user_id)
+        )
+        token = token_result.scalar_one_or_none()
+        role = token.role if token else "user"
         return {
             "id": user.id,
-            "role": user.role,
+            "access_id": access_user_id,
+            "role": role,
             "full_name": user.full_name,
             "phone": user.phone,
             "about": user.about
