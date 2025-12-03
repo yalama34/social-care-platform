@@ -55,6 +55,7 @@ class ChatModel(Base):
     role: Mapped[str] = mapped_column(default="user")
     message: Mapped[str] = mapped_column(String)
     created_at: Mapped[datetime.datetime] = mapped_column(default=func.now())
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
     
 
 #Requests models

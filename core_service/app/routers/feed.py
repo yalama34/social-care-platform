@@ -1,5 +1,5 @@
 from ..common.database import SessionDep
-from ..common.models import RegisterRequest, RequestModel, UserModel, AcceptRequest
+from ..common.models import RequestModel, AcceptRequest
 from fastapi import APIRouter, HTTPException, Header
 from datetime import timedelta, datetime
 from sqlalchemy import select

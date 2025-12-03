@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from ..common.models import ChatModel, RequestModel
 from ..common.database import SessionDep
 from fastapi import HTTPException
@@ -19,7 +19,9 @@ class ChatService:
         await self.session.refresh(chat_message)
         return chat_message
     async def get_history(self, request_id: int, user_id: int, user_role: str):
-        result = await self.session.execute(select(RequestModel).where(RequestModel.id == request_id))
+        result = await self.session.execute(
+            select(RequestModel).where(RequestModel.id == request_id)
+        )
         request = result.scalar()
         if not request:
             raise HTTPException(status_code=404, detail="Заявка не найдена")
@@ -28,7 +30,11 @@ class ChatService:
         elif user_role == "volunteer" and request.volunteer_id != user_id:
             raise HTTPException(status_code=403, detail="Недостаточно прав")
 
-        messages_result = await self.session.execute(select(ChatModel).where(ChatModel.request_id == request_id).order_by(ChatModel.created_at))
+        messages_result = await self.session.execute(
+            select(ChatModel)
+            .where(ChatModel.request_id == request_id, ChatModel.is_deleted == False)
+            .order_by(ChatModel.created_at)
+        )
         messages = messages_result.scalars().all()
 
         return [
@@ -38,5 +44,33 @@ class ChatService:
             }
             for message in messages
         ]
+    async def delete_history(self, request_id: int):
+        result = await self.session.execute(select(RequestModel).where(RequestModel.id == request_id))
+        request = result.scalar()
+        if not request:
+            raise HTTPException(status_code=404, detail="Заявка не найдена")
+
+        await self.session.execute(update(ChatModel).where(ChatModel.request_id == request_id).values(is_deleted=True))
+        await self.session.commit()
+
+        return True
+
+    async def restore_history(self, request_id: int, user_id: int, user_role: str):
+        result = await self.session.execute(select(RequestModel).where(RequestModel.id == request_id))
+        request = result.scalar()
+        if not request:
+            raise HTTPException(status_code=404, detail="Заявка не найдена")
+        if user_role == "user" and request.user_id != user_id:
+            raise HTTPException(status_code=403, detail="Недостаточно прав")
+        elif user_role == "volunteer" and request.volunteer_id != user_id:
+            raise HTTPException(status_code=403, detail="Недостаточно прав")
+
+        await self.session.execute(
+            update(ChatModel)
+            .where(ChatModel.request_id == request_id)
+            .values(is_deleted=False)
+        )
+        await self.session.commit()
+        
 
 

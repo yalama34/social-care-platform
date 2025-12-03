@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Header
 from datetime import timedelta, datetime
 from sqlalchemy import select
 from ..services.request import RequestService
+from ..services.chat import ChatService
 from authx import AuthX, AuthXConfig
 
 config = AuthXConfig(
@@ -79,11 +80,16 @@ async def edit_request(session: SessionDep, option: str, request_id: int, author
         "cancel": "onwait",
         "complete": "completed",
     }
+    user_id = access_token.user_id
+    user_role = access_token.role
     request_service = RequestService(session = session)
     if option == "delete":
         if access_token.role == "volunteer":
             raise HTTPException(status_code=403, detail="Forbidden")
         await request_service.delete_request(request_id)
     elif option in ["cancel", "complete"]:
+        if option == "cancel":
+            chat_service = ChatService(session)
+            await chat_service.delete_history(request_id)
         await request_service.edit_request_status(request_id, status_decipher[option])
 
