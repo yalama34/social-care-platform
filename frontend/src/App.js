@@ -12,10 +12,10 @@ import RequestFeed from "./components/RequestFeed";
 function App(){
   return(
     <Router>
+        <RefreshHandler />
         <Routes>
           <Route path="/auth" element={<MainPage />}></Route>
-          <Route path="/" element={<Navigate to="/refresh" />} />
-          <Route path="/refresh" element={<RefreshHandler />}></Route>
+          <Route path="/" element={<Navigate to="/auth" />} />
           <Route path="/auth/login-start" element={<AuthPage />}></Route>
           <Route path="/auth/start-register" element={<AuthPage />}></Route>
           <Route path="/auth/verify-phone" element={<VerifyCode />}></Route>

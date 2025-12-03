@@ -392,7 +392,7 @@ const closeVerdict = async () => {
                                     {selectedRequest.full_name}
                                 </p>
                             )}
-                            {role === "user" || !(selectedRequest.status === "completed") ? (
+                            {role === "user" ? (
                                 (!(selectedRequest.status === "completed")) ? (
                                     <div className="detailed-actions">
                                         <button onClick={async () => deleteRequest(selectedRequest.id)}>Удалить</button>

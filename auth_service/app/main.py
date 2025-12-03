@@ -42,8 +42,8 @@ async def check_session(session: SessionDep, authorization: str = Header(None)) 
         raise HTTPException(status_code=401, detail="Token is not given")
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid token format")
-    access_token = authorization.split()[1]
-    access_token = security._decode_token(token=access_token)
+    access_token_str = authorization.split()[1]
+    access_token = security._decode_token(token=access_token_str)
     result = await session.execute(
         select(UserModel).where(UserModel.id == access_token.user_id)
     )
@@ -52,17 +52,17 @@ async def check_session(session: SessionDep, authorization: str = Header(None)) 
         return {
             "session_active": False,
         }
+    result = await session.execute(select(RefreshToken).where(RefreshToken.user_id == user.id))
+    refresh_token = result.scalar()
+    token = TokenService(session)
+    check_refresh_token = await token.validate_refresh_token(refresh_token.token)
+    if refresh_token.is_revoked:
+        raise HTTPException(status_code=403, detail="You have been banned")
     if access_token.expires_at < int(datetime.now().timestamp()):
-        token = TokenService(session)
-        refresh_token = await session.execute(select(RefreshToken).where(RefreshToken.user_id == user.id))
-        check_refresh_token = await token.validate_refresh_token(refresh_token.token)
         if not check_refresh_token:
-            if not refresh_token.is_revoked:
-                return {
-                    "session_active": False,
-                }
-            else:
-                raise HTTPException(status_code=403, detail="You have been banned")
+            return {
+                "session_active": False,
+            }
         new_access_token = await token.create_access_token(user_id=user.id, security=security)
         return {
             "session_active": True,
@@ -70,7 +70,7 @@ async def check_session(session: SessionDep, authorization: str = Header(None)) 
         }
     return{
         "session_active": True,
-        "access_token": access_token,
+        "access_token": access_token_str,
     }
 
 

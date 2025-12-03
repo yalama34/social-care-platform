@@ -1,16 +1,20 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function RefreshHandler() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    if (location.pathname.startsWith("/auth")) {
+      return;
+    }
+
     const backendUrl = "http://localhost:8000";
-    const role = localStorage.getItem("role");
 
     const refresh = async () => {
       const access_token = localStorage.getItem("access_token");
-      alert(access_token);
+      
       if (!access_token) {
         navigate("/auth");
         return;
@@ -25,36 +29,35 @@ function RefreshHandler() {
           },
         });
 
+        if (response.status === 403) {
+          localStorage.clear();
+          navigate("/auth");
+          return;
+        }
+
         const data = await response.json();
 
-        if (data.session_active) {
-            navigate(`/home/${role}`);
-        } else {
+        if (!response.ok || !data.session_active) {
+          localStorage.clear();
           navigate("/auth");
+          return;
         }
+
+        if (data.access_token) {
+          localStorage.setItem("access_token", data.access_token);
+        }
+
       } catch (err) {
-        console.error("Ошибка при обновлении токена", err);
+        console.error("Ошибка при проверке сессии", err);
+        localStorage.clear();
         navigate("/auth");
       }
     };
 
     refresh();
-  }, [navigate]);
+  }, [location.pathname, navigate]);
 
-  return (
-  <div style={{
-    backgroundImage: "none",
-    backgroundColor: "white",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    margin: 0,
-    padding: 0,
-    minHeight: "100vh",
-  }}>
-    <h1>Обновляем сессию...</h1>
-  </div>
-);
+  return null;
 }
 
 export default RefreshHandler;
