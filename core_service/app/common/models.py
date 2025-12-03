@@ -56,7 +56,24 @@ class ChatModel(Base):
     message: Mapped[str] = mapped_column(String)
     created_at: Mapped[datetime.datetime] = mapped_column(default=func.now())
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
-    
+
+
+class ComplaintModel(Base):
+    __tablename__ = 'complaints'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    complaint_type: Mapped[str] = mapped_column(String)
+    complaint_text: Mapped[str] = mapped_column(String)
+    complainant_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    suspect_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    request_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    details: Mapped[str] = mapped_column(String)
+    ai_response: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String, default="pending")
+    admin_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    admin_verdict: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=func.now())
+
 
 #Requests models
 class PhoneRequest(BaseModel):
