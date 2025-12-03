@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import ForeignKey, String, Integer, DateTime, Boolean
+from sqlalchemy import ForeignKey, String, Integer, DateTime, Boolean, Float
 import datetime
 from sqlalchemy.sql import func
 
@@ -58,6 +58,20 @@ class ChatModel(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(default=func.now())
     is_deleted: Mapped[bool] = mapped_column(default=False)
 
+class UserRating(Base):
+    __tablename__ = 'user_ratings'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+
+    total_rating: Mapped[int] = mapped_column(Integer, default=0)
+    rating_count: Mapped[int] = mapped_column(Integer, default=0)
+    average_rating: Mapped[float] = mapped_column(Float, default=0.0)
+
+    def update_rating(self, new_rating: float):
+        self.total_rating += new_rating
+        self.rating_count += 1
+        self.average_rating = round(self.total_rating / self.rating_count, 1)
 
 #Requests models
 class PhoneRequest(BaseModel):

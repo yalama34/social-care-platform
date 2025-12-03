@@ -66,5 +66,7 @@ class RequestService:
         request = result.scalar()
         if not request:
             raise HTTPException(status_code=404, detail="Request not found")
-        await self.session.delete(request)
+        request.status = "deleted"
+        self.session.add(request)
         await self.session.commit()
+        self.session.refresh(request)

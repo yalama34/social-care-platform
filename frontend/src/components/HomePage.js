@@ -147,25 +147,27 @@ function HomePage() {
             <div className="requests-grid">
                 {list.map((request) => {
                     const timeString = formatDateTime(request.desired_time);
-                    return (
-                        <div key={request.id} className="request-card">
-                            <p>{serviceStatus[request.status]}</p>
-                            <p>{serviceType[request.service_type]}</p>
-                            <p>Адрес: {request.address}</p>
-                            <p>
-                                Комментарий{" "}
-                                {request.comment || "Нет комментария"}
-                            </p>
-                            <p>Желаемое время: {timeString}</p>
-                            <button
-                                className="request-details-button"
-                                onClick={() => showDetails(request)}
-                                type="button"
-                            >
-                                Подробнее
-                            </button>
-                        </div>
-                    );
+                    if (!request.status === "deleted"){ 
+                        return (
+                            <div key={request.id} className="request-card">
+                                <p>{serviceStatus[request.status]}</p>
+                                <p>{serviceType[request.service_type]}</p>
+                                <p>Адрес: {request.address}</p>
+                                <p>
+                                    Комментарий{" "}
+                                    {request.comment || "Нет комментария"}
+                                </p>
+                                <p>Желаемое время: {timeString}</p>
+                                <button
+                                    className="request-details-button"
+                                    onClick={() => showDetails(request)}
+                                    type="button"
+                                >
+                                    Подробнее
+                                </button>
+                            </div>
+                        );
+                    }
                 })}
             </div>
         );
@@ -218,8 +220,6 @@ function HomePage() {
 
         const backendUrl = "http://localhost:8001";
         const access_token = localStorage.getItem("access_token");
-
-        // Determine who to complain about based on role
         const susUserId = role === "user"
             ? selectedRequest.volunteer_id
             : selectedRequest.user_id;
