@@ -7,11 +7,15 @@ class RatingService:
     def __init__(self, session):
         self.session = session
 
-    async def get_rating(self, access_token):
-        data = await self.session.execute(select().where(UserRating.user_id == access_token.user_id))
+
+    async def get_rating_by_user_id(self, user_id: int):
+        data = await self.session.execute(select(UserRating).where(UserRating.user_id == user_id))
         user_rating = data.scalar()
         if not user_rating:
-            raise HTTPException(status_code=404, detail="Rating not found")
+            return {
+                "rating": 0.0,
+                "rating_count": 0,
+            }
         return {
             "rating": user_rating.average_rating,
             "rating_count": user_rating.rating_count,

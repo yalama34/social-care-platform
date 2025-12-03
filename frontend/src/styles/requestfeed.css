@@ -102,3 +102,32 @@
     margin-bottom: 2%;
     cursor: pointer;
 }
+
+.back-button {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 12px 24px;
+    background-color: #FFE851;
+    color: #000;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Jost', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.back-button:hover {
+    background-color: #FFEB7C;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.back-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}

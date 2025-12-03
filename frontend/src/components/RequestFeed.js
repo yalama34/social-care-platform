@@ -198,6 +198,13 @@ function RequestFeed() {
                     ))}
                 </div>
             )}
+            <button 
+                className="back-button"
+                onClick={() => navigate(-1)}
+                title="Вернуться назад"
+            >
+                ← Назад
+            </button>
         </div>
     );
 }
