@@ -15,8 +15,11 @@ function HomePage() {
     const [ws, SetWs] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     const [requestId, setRequestId] = useState("")
-    const [complaintOpen, setComplaintOpen] = useState(false);
+    const [showComplaintModal, setShowComplaintModal] = useState(false);
     const [complaintText, setComplaintText] = useState("");
+    const [complaintType, setComplaintType] = useState("chat");
+    const [submittingComplaint, setSubmittingComplaint] = useState(false);
+    const [verdictResult, setVerdictResult] = useState(null);
     const role = localStorage.getItem("role");
 
     const getRequests = async () => {
@@ -74,22 +77,6 @@ function HomePage() {
             SetWs(null);
         };
         setIsConnected(false);
-    };
-
-    const openComplaint = () => {
-        setIsDetailedOpen(false);
-        setComplaintOpen(true);
-    };
-
-    const closeComplaint = () => {
-        setComplaintOpen(false);
-        setIsDetailedOpen(true);
-        setComplaintText("");
-    };
-
-    const sendComplaint = () => {
-        alert(`Жалоба отправлена: ${complaintText}`);
-        closeComplaint();
     };
 
     const formatDateTime = (value) => {
@@ -226,6 +213,73 @@ function HomePage() {
         setMessage('');
     }
 
+    const sendComplaint = async () => {
+        if (!complaintText.trim() || !selectedRequest) return;
+
+        const backendUrl = "http://localhost:8001";
+        const access_token = localStorage.getItem("access_token");
+
+        // Determine who to complain about based on role
+        const susUserId = role === "user"
+            ? selectedRequest.volunteer_id
+            : selectedRequest.user_id;
+
+        if (!susUserId || susUserId === -1) {
+            alert("Невозможно отправить жалобу: нет другого участника");
+            return;
+        }
+
+        setSubmittingComplaint(true);
+        try {
+            const response = await fetch(backendUrl + `/complaint/${complaintType}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${access_token}`,
+                },
+                body: JSON.stringify({
+                    complaint_text: complaintText,
+                    sus_user_id: susUserId,
+                    request_id: selectedRequest.id
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                setVerdictResult(result);
+                setShowComplaintModal(false);
+                setComplaintText("");
+            } else {
+                const error = await response.json();
+                alert("Ошибка: " + (error.detail || "Не удалось отправить жалобу"));
+            }
+        } catch (err) {
+            alert("Ошибка сети: " + err.message);
+        } finally {
+            setSubmittingComplaint(false);
+        }
+    }
+
+const closeVerdict = async () => {
+    if (verdictResult.confidence >= 90) {
+        const backendUrl = "http://localhost:8001";
+        const access_token = localStorage.getItem("access_token");
+
+        for (const punishment of verdictResult.punishments) {
+            if (punishment.verdict !== "innocent") {
+                await fetch(backendUrl + `/verdict/${punishment.verdict}/${punishment.user_id}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${access_token}`,
+                    }
+                });
+            }
+        }
+    }
+    setVerdictResult(null);
+}
+
     useEffect(() => {
         getRequests();
     }, []);
@@ -307,7 +361,6 @@ function HomePage() {
                             <button className="detailed-close" onClick={closeDetailed}>
                                 ×
                             </button>
-
                             <h2>
                                 Заявка #{selectedRequest.id} (
                                 {serviceStatus[selectedRequest.status]})
@@ -339,7 +392,7 @@ function HomePage() {
                                     {selectedRequest.full_name}
                                 </p>
                             )}
-                            {role === "user" && !(selectedRequest.status === "completed") ? (
+                            {role === "user" ? (
                                 (!(selectedRequest.status === "completed")) ? (
                                     <div className="detailed-actions">
                                         <button onClick={async () => deleteRequest(selectedRequest.id)}>Удалить</button>
@@ -361,26 +414,18 @@ function HomePage() {
                                     </div>
                                 )
                             )}
+
                         </div>
                         <div className="chat-panel">
                             <div className="chat-header">
                                 <p className="chat-title">Чат заявки</p>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{display: "flex", alignItems: "center", gap: "10px"}}>
                                     <span className={`chat-status ${isConnected ? "online" : "offline"}`}>
                                         {isConnected ? "в сети" : "нет подключения"}
                                     </span>
-                                    <button 
-                                        onClick={openComplaint}
-                                        style={{
-                                            background: 'none',
-                                            border: '1px solid #ccc',
-                                            borderRadius: '4px',
-                                            cursor: 'pointer',
-                                            padding: '4px 8px',
-                                            fontSize: '0.9rem',
-                                            color: '#d32f2f'
-                                        }}
-                                        title="Пожаловаться"
+                                    <button
+                                        className="complaint-button"
+                                        onClick={() => setShowComplaintModal(true)}
                                     >
                                         Пожаловаться
                                     </button>
@@ -415,32 +460,126 @@ function HomePage() {
                     </div>
                 </div>
             )}
-            {complaintOpen && selectedRequest && (
-                <div className="request-detailed-overlay" onClick={closeComplaint}>
-                     <div 
-                        className="request-detailed-layout" 
-                        style={{ height: 'auto', minHeight: '300px', display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px' }}
+
+            {showComplaintModal && (
+                <div className="request-detailed-overlay" onClick={() => setShowComplaintModal(false)}>
+                    <div
+                        className="complaint-modal"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h2>Пожаловаться на заявку #{selectedRequest.id}</h2>
-                        <textarea
-                            className="complaint-textarea"
-                            value={complaintText}
-                            onChange={(e) => setComplaintText(e.target.value)}
-                            placeholder="Опишите проблему..."
-                            style={{
-                                width: '100%',
-                                height: '150px',
-                                padding: '10px',
-                                borderRadius: '8px',
-                                border: '1px solid #ccc',
-                                resize: 'none'
-                            }}
-                        />
-                        <div className="detailed-actions" style={{ justifyContent: 'flex-end', gap: '10px', marginTop: 'auto' }}>
-                            <button onClick={closeComplaint} style={{ backgroundColor: '#ccc', color: '#000' }}>Отмена</button>
-                            <button onClick={sendComplaint} style={{ backgroundColor: 'red', color: 'white' }}>Отправить жалобу</button>
+                        <button
+                            className="detailed-close"
+                            onClick={() => setShowComplaintModal(false)}
+                        >
+                            ×
+                        </button>
+                        <h2>Подать жалобу</h2>
+                        <div className="complaint-form">
+                            <label>
+                                <strong>Тип жалобы:</strong>
+                                <select
+                                    value={complaintType}
+                                    onChange={(e) => setComplaintType(e.target.value)}
+                                >
+                                    <option value="chat">Чат (переписка)</option>
+                                    <option value="request">Заявка (выполнение)</option>
+                                    <option value="profile">Профиль</option>
+                                </select>
+                            </label>
+                            <label>
+                                <strong>Опишите проблему:</strong>
+                                <textarea
+                                    value={complaintText}
+                                    onChange={(e) => setComplaintText(e.target.value)}
+                                    placeholder="Подробно опишите причину жалобы..."
+                                    rows={5}
+                                />
+                            </label>
+                            <div className="complaint-actions">
+                                <button
+                                    onClick={() => setShowComplaintModal(false)}
+                                    className="cancel-btn"
+                                >
+                                    Отмена
+                                </button>
+                                <button
+                                    onClick={sendComplaint}
+                                    disabled={submittingComplaint || !complaintText.trim()}
+                                    className="submit-btn"
+                                >
+                                    {submittingComplaint ? "Отправка..." : "Отправить"}
+                                </button>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {verdictResult && verdictResult.punishments && (
+                <div className="request-detailed-overlay" onClick={() => setVerdictResult(null)}>
+                    <div
+                        className="verdict-modal"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            className="detailed-close"
+                            onClick={() => setVerdictResult(null)}
+                        >
+                            ×
+                        </button>
+
+                        <div className="verdict-header">
+                            <h2 className="verdict-title">Результат рассмотрения</h2>
+                        </div>
+
+                        <div className="verdict-punishments">
+                            {verdictResult.punishments.map((p, idx) => (
+                                <div key={idx} className={`punishment-item verdict-${p.verdict}`}>
+                                    <span className="punishment-icon">
+                                        {p.verdict === "ban" && "⛔"}
+                                        {p.verdict === "warning" && "⚠️"}
+                                        {p.verdict === "innocent" && "✅"}
+                                    </span>
+                                    <span className="punishment-label">
+                                        Пользователь #{p.user_id}:
+                                    </span>
+                                    <span className="punishment-verdict">
+                                        {p.verdict === "ban" && "Бан"}
+                                        {p.verdict === "warning" && "Предупреждение"}
+                                        {p.verdict === "innocent" && "Невиновен"}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="verdict-confidence">
+                            <span className="confidence-label">Уверенность ИИ</span>
+                            <div className="confidence-bar-container">
+                                <div
+                                    className="confidence-bar"
+                                    style={{ width: `${verdictResult.confidence}%` }}
+                                />
+                            </div>
+                            <span className="confidence-value">{verdictResult.confidence}%</span>
+                        </div>
+
+                        <div className="verdict-reasoning">
+                            <h3>Обоснование</h3>
+                            <p>{verdictResult.reasoning_user}</p>
+                        </div>
+
+                        <div className="verdict-note">
+                            {verdictResult.confidence >= 90
+                                ? "Решение применено автоматически"
+                                : "Жалоба отправлена на ручную проверку"}
+                        </div>
+
+                        <button
+                            className="verdict-close-btn"
+                            onClick={closeVerdict}
+                        >
+                            Понятно
+                        </button>
                     </div>
                 </div>
             )}

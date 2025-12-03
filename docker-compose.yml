@@ -31,6 +31,8 @@ services:
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_PORT=${DATABASE_PORT}
       - DATABASE_HOST=db
+      - YANDEX_FOLDER_ID=${YANDEX_FOLDER_ID}
+      - YANDEX_API_KEY=${YANDEX_API_KEY}
     ports:
       - "8001:8000"
     restart: on-failure # -> unless-stopped

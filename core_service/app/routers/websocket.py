@@ -17,28 +17,28 @@ config = AuthXConfig(
 
 security = AuthX(config=config)
 
-@ws_router.websocket("/ws/{role}/{id}")
-async def websocket_endpoint(websocket: WebSocket, role: str, id : int, session: SessionDep, access_token = Query(...)):
+@ws_router.websocket("/ws/{role}/{request_id}")
+async def websocket_endpoint(websocket: WebSocket, role: str, request_id: int, session: SessionDep, access_token: str = Query(...)):
     if not access_token:
         await websocket.close(code=1008, reason="Требуется access токен")
         return
     try:
-        access_token = security._decode_token(token=access_token)
+        payload = security._decode_token(token=access_token)
     except Exception as e:
         await websocket.close(code=1008, reason="Неверный токен")
         return
 
-    result = await session.execute(select(RequestModel).where(RequestModel.id == id))
+    result = await session.execute(select(RequestModel).where(RequestModel.id == request_id))
     request = result.scalar()
 
     if not request:
         await websocket.close(code=1008, reason="Заявка не найдена")
         return
 
-    if role == "user" and access_token.user_id != request.user_id:
+    if role == "user" and payload.user_id != request.user_id:
         await websocket.close(code=1008, reason="Недостаточно прав")
         return
-    if role == "volunteer" and access_token.user_id != request.volunteer_id:
+    if role == "volunteer" and payload.user_id != request.volunteer_id:
         await websocket.close(code=1008, reason="Недостаточно прав")
         return
 
@@ -48,7 +48,7 @@ async def websocket_endpoint(websocket: WebSocket, role: str, id : int, session:
         while True:
             message = await websocket.receive_text()
             try:
-                await chat_service.save_message(id, role, message)
+                await chat_service.save_message(request_id, role, message)
             except Exception as e:
                 await websocket.send_text("Возникла ошибка при сохранении сообщения")
             await manager.broadcast(f'{role}-{message}')
