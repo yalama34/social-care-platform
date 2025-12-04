@@ -528,9 +528,17 @@ function HomePage() {
                         <div className="chat-panel">
                             <div className="chat-header">
                                 <p className="chat-title">Чат заявки</p>
-                                <span className={`chat-status ${isConnected ? "online" : "offline"}`}>
-                                    {isConnected ? "в сети" : "нет подключения"}
-                                </span>
+                                <div style={{display: "flex", alignItems: "center", gap: "10px"}}>
+                                    <span className={`chat-status ${isConnected ? "online" : "offline"}`}>
+                                        {isConnected ? "в сети" : "нет подключения"}
+                                    </span>
+                                    <button
+                                        className="complaint-button"
+                                        onClick={() => setShowComplaintModal(true)}
+                                    >
+                                        Пожаловаться
+                                    </button>
+                                </div>
                             </div>
                             <div className="chat-window">
                                 {messages.length === 0 ? (
@@ -557,8 +565,8 @@ function HomePage() {
                                     Отправить
                                 </button>
                             </div>
-
                         </div>
+
                     </div>
                 </div>
             )}
