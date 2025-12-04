@@ -86,8 +86,8 @@ class AnalysisService:
         В ответе верни ТОЛЬКО валидный JSON со следующими полями:
         {{
           "punishments": [
-            {{"user_id": {complainant_id}, "verdict": "<ban или warning или innocent>"}},
-            {{"user_id": {suspect_id}, "verdict": "<ban или warning или innocent>"}}
+            {{"user_id": {complainant_id}, "role": "{complainant_role}", "verdict": "<ban или warning или innocent>"}},
+            {{"user_id": {suspect_id}, "role": "{suspend_role}", "verdict": "<ban или warning или innocent>"}}
           ],
           "confidence": <число 0-100>,
           "reasoning": "<для администрации>",

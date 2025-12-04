@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import secrets
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from ..common.models import RequestModel, UserModel, RegisterRequest
 from fastapi import HTTPException
 
@@ -70,3 +70,47 @@ class RequestService:
         self.session.add(request)
         await self.session.commit()
         self.session.refresh(request)
+    
+    async def delete_all_requests_by_user_id(self, user_id):
+        result = await self.session.execute(
+            select(RequestModel).where(RequestModel.user_id == user_id)
+        )
+        requests = result.scalars().all()
+        if not requests:
+            return []
+        
+        deleted_request_ids = []
+        for request in requests:
+            request.status = "deleted"
+            if request.volunteer_id and request.volunteer_id != -1:
+                request.volunteer_id = -1
+            self.session.add(request)
+            deleted_request_ids.append(request.id)
+        
+        await self.session.commit()
+        return deleted_request_ids
+    
+    async def return_volunteer_requests_to_feed(self, volunteer_id):
+        """Возвращает все заявки волонтера в ленту (статус onwait, очищает volunteer_id)"""
+        result = await self.session.execute(
+            select(RequestModel).where(
+                and_(
+                    RequestModel.volunteer_id == volunteer_id,
+                    RequestModel.status != "deleted",
+                    RequestModel.status != "completed"
+                )
+            )
+        )
+        requests = result.scalars().all()
+        if not requests:
+            return []
+        
+        returned_request_ids = []
+        for request in requests:
+            request.status = "onwait"
+            request.volunteer_id = -1
+            self.session.add(request)
+            returned_request_ids.append(request.id)
+        
+        await self.session.commit()
+        return returned_request_ids

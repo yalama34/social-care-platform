@@ -147,7 +147,7 @@ function HomePage() {
             <div className="requests-grid">
                 {list.map((request) => {
                     const timeString = formatDateTime(request.desired_time);
-                    if (!request.status === "deleted"){ 
+                    if (!request.status !== "deleted"){ 
                         return (
                             <div key={request.id} className="request-card">
                                 <p>{serviceStatus[request.status]}</p>
@@ -275,7 +275,32 @@ const closeVerdict = async () => {
                     }
                 });
             }
+            if (punishment.verdict === "ban"){
+                if (punishment.role === "user" && (complaintType === "chat" || complaintType === "request")){
+                    await fetch(backendUrl + `/home/delete/${punishment.user_id}?by_id=True`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${access_token}`,
+                        }
+                    });
+                }
+                if (punishment.role === "volunteer" && (complaintType === "chat" || complaintType === "request")){
+                    const response = await fetch(backendUrl + `/home/cancel/${punishment.user_id}?by_volunteer_id=true`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${access_token}`,
+                        }
+                    });
+                    if (!response.ok) {
+                        console.error("Ошибка при освобождении заявок волонтера:", await response.text());
+                    }
+                }
+            }
         }
+        await getRequests();
+        setIsDetailedOpen(false);
     }
     setVerdictResult(null);
 }
@@ -541,7 +566,7 @@ const closeVerdict = async () => {
                                         {p.verdict === "innocent" && "✅"}
                                     </span>
                                     <span className="punishment-label">
-                                        Пользователь #{p.user_id}:
+                                        Пользователь #{p.user_id} ({p.role === "user" ? "Пользователь" : p.role === "volunteer" ? "Волонтёр" : p.role}):
                                     </span>
                                     <span className="punishment-verdict">
                                         {p.verdict === "ban" && "Бан"}

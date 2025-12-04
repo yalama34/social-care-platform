@@ -123,4 +123,14 @@ async def request_moderation(
     ai_response["complainant_id"] = complainant["uid"]
     ai_response["suspect_id"] = suspend["uid"]
 
+    # Гарантируем, что в каждом punishment есть роль
+    if "punishments" in ai_response:
+        for punishment in ai_response["punishments"]:
+            if "role" not in punishment:
+                # Добавляем роль на основе user_id
+                if punishment["user_id"] == complainant["uid"]:
+                    punishment["role"] = complainant["role"]
+                elif punishment["user_id"] == suspend["uid"]:
+                    punishment["role"] = suspend["role"]
+
     return ai_response
