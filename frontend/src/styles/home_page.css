@@ -39,6 +39,10 @@
     text-decoration: underline;
     color: #000;
 }
+.link-to-rating {
+    color:#000;
+    text-decoration: underline;
+}
 .main-content {
     flex: 1;
     display: flex;

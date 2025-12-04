@@ -131,7 +131,7 @@ function Profile() {
                     </div>
                 );
             }
-        }
+        } 
         return null;
     };
 

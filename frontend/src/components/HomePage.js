@@ -551,7 +551,7 @@ function HomePage() {
                                 <>
                                     <p>
                                         <strong>Волонтёр: </strong>
-                                    {((selectedRequest.volunteer_id !== -1) ? (<Link to={`/profile/${selectedRequest.volunteer_id}`} className="link-to-reting">
+                                    {((selectedRequest.volunteer_id !== -1) ? (<Link to={`/profile/${selectedRequest.volunteer_id}`} className="link-to-rating">
                                         {selectedRequest.volunteer_name}
                                     </Link>):(
                                         <span>Не назначен</span>
@@ -562,7 +562,10 @@ function HomePage() {
                             ) : (
                                 <p>
                                     <strong>Заказчик: </strong>
-                                    {selectedRequest.full_name}
+                                    <Link to={`/profile/${selectedRequest.user_id}`} className="link-to-rating">
+                                        {selectedRequest.full_name}
+                                    </Link>
+                                    
                                 </p>
                             )}
                             {role === "user" ? (
