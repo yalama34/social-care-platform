@@ -188,7 +188,7 @@ function HomePage() {
                             <p><strong>{serviceType[request.service_type]}</strong></p>
                             <p><strong>Адрес:</strong> {FormatText(request.address)}</p>
                             <p>
-                                <strong>Комментарий{" "} </strong>
+                                <strong>Комментарий:{" "} </strong>
                                 {FormatText(request.comment) || "Нет комментария"}
                             </p>
                             <p><strong>Желаемое время:</strong> {timeString}</p>
@@ -482,10 +482,17 @@ function HomePage() {
                             </p>
 
                             {role === "user" ? (
-                                <p>
-                                    <strong>Волонтёр: </strong>
-                                    {selectedRequest.volunteer_name || "Не назначен"}
-                                </p>
+                                <>
+                                    <p>
+                                        <strong>Волонтёр: </strong>
+                                    {((selectedRequest.volunteer_id !== -1) ? (<Link to={`/profile/${selectedRequest.volunteer_id}`} className="link-to-reting">
+                                        {selectedRequest.volunteer_name}
+                                    </Link>):(
+                                        <span>Не назначен</span>
+                                    ))}
+                                    
+                                    </p>
+                                </>
                             ) : (
                                 <p>
                                     <strong>Заказчик: </strong>

@@ -180,7 +180,7 @@ function RequestFeed() {
                                         <p className="p2">{formatDateTime(app.desired_time)}</p>
                                     </div>
 
-                                    {(serviceType[app.serviceType]==="delivery_food" || serviceType[app.serviceType]==="delivery_drugs") ?
+                                    {(app.service_type==="delivery_food" || app.service_type==="delivery_drugs") ?
                                     (
                                     <>
                                         <div className="couple">
@@ -189,9 +189,9 @@ function RequestFeed() {
                                         </div>
                                         <div className="couple">
                                         <p className="p1">Список товаров</p>
-                                        <p className="p2">{app.listProducts}</p>
+                                        <p className="p2">{app.list_products}</p>
                                         </div>
-                                    </>):((serviceType[app.serviceType]==="mobility_help") ?
+                                    </>):((app.service_type==="mobility_help") ?
                                         (
                                         <>
                                             <div className="couple">
@@ -200,7 +200,7 @@ function RequestFeed() {
                                             </div>
                                             <div className="couple">
                                             <p className="p1">Куда</p>
-                                            <p className="p2">{app.destinationAdress}</p>
+                                            <p className="p2">{app.destination_address}</p>
                                             </div>
                                         </>
                                         ):(
