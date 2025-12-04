@@ -221,12 +221,27 @@ function HomePage() {
             return;
         }
 
+        if (!selectedRequest) {
+            alert("Ошибка: заявка не выбрана");
+            return;
+        }
+
+        // Определяем, кого оценивать
+        const ratedUserId = role === "user" 
+            ? selectedRequest.volunteer_id  // Пользователь оценивает волонтера
+            : selectedRequest.user_id;       // Волонтер оценивает пользователя
+
+        if (!ratedUserId || ratedUserId === -1) {
+            alert("Невозможно оценить: нет другого участника заявки");
+            return;
+        }
+
         const backendUrl = "http://localhost:8001";
         const access_token = localStorage.getItem("access_token");
         
         setSubmittingRating(true);
         try {
-            const response = await fetch(`${backendUrl}/set-rating?add_rating=${selectedRating}`, {
+            const response = await fetch(`${backendUrl}/set-rating?add_rating=${selectedRating}&user_id=${ratedUserId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -238,6 +253,7 @@ function HomePage() {
                 setIsRatingOpen(false);
                 setSelectedRating(0);
                 setHoveredRating(0);
+                await getRequests(); // Обновляем список заявок
             } else {
                 const error = await response.json();
                 alert("Ошибка: " + (error.detail || "Не удалось отправить оценку"));

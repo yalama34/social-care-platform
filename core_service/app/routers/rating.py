@@ -1,7 +1,7 @@
 from ..common.database import SessionDep
 from ..services.rating import RatingService
 from ..common.models import UserRating
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Query
 from datetime import timedelta
 from sqlalchemy import select
 from authx import AuthX, AuthXConfig
@@ -29,7 +29,7 @@ async def get_user_rating_by_id(user_id: int, session: SessionDep, authorization
 
 
 @rating_router.post("/set-rating")
-async def accept_request(session: SessionDep, add_rating: int, authorization: str = Header(None)):
+async def accept_request(session: SessionDep, add_rating: int = Query(...), user_id: int = Query(...), authorization: str = Header(None)):
     if not authorization:
         raise HTTPException(status_code=401, detail="Token is not given")
     if not authorization.startswith("Bearer "):
@@ -38,22 +38,28 @@ async def accept_request(session: SessionDep, add_rating: int, authorization: st
     access_token = authorization.split()[1]
     access_token = security._decode_token(token=access_token)
 
+    if access_token.user_id == user_id:
+        raise HTTPException(status_code=400, detail="Нельзя оценить самого себя")
+
     try:
-        data = await session.execute(select(UserRating).where(UserRating.user_id == access_token.user_id))
+        data = await session.execute(select(UserRating).where(UserRating.user_id == user_id))
         user_rating = data.scalar()
 
         if not user_rating:
-            user_rating = UserRating(user_id=access_token.user_id)
+            user_rating = UserRating(user_id=user_id)
             session.add(user_rating)
             await session.flush()
-
+        print("!!!!! РЕЙТИНГ ПОЛЬЗОВАТЕЛЯ !!!!", user_rating.average_rating)
         user_rating.update_rating(add_rating)
+
 
         await session.commit()
         await session.refresh(user_rating)
 
         return {
             "success": True,
+            "rating": user_rating.average_rating,
+            "count": user_rating.rating_count,
         }
 
     except HTTPException:

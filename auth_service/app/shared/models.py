@@ -73,22 +73,6 @@ class UserRating(Base):
         self.rating_count += 1
         self.average_rating = round(self.total_rating / self.rating_count, 1)
 
-class UserRating(Base):
-    __tablename__ = 'user_ratings'
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-
-    total_rating: Mapped[int] = mapped_column(Integer, default=0)
-    rating_count: Mapped[int] = mapped_column(Integer, default=0)
-    average_rating: Mapped[float] = mapped_column(Float, default=0.0)
-
-    def update_rating(self, new_rating: float):
-        self.total_rating += new_rating
-        self.rating_count += 1
-        self.average_rating = round(self.total_rating / self.rating_count, 1)
-
-
 #Requests models
 class PhoneRequest(BaseModel):
     phone: str
