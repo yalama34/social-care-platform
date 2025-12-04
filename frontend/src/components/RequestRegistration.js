@@ -127,6 +127,13 @@ function RequestRegistration() {
                     <button className="button" onClick={handleSubmit}>
                         Отправить
                     </button>
+                    <button 
+                        className="back-button"
+                        onClick={() => navigate(-1)}
+                        title="Вернуться назад"
+                    >
+                        ← Назад
+                    </button>
                 </>
         </div>
     )

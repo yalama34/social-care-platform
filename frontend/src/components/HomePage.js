@@ -14,6 +14,10 @@ function HomePage() {
     const [message, setMessage] = useState('');
     const [ws, SetWs] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
+    const [isRatingOpen,setIsRatingOpen] = useState(false);
+    const [selectedRating, setSelectedRating] = useState(0);
+    const [hoveredRating, setHoveredRating] = useState(0);
+    const [submittingRating, setSubmittingRating] = useState(false);
     const [requestId, setRequestId] = useState("")
     const [showComplaintModal, setShowComplaintModal] = useState(false);
     const [complaintText, setComplaintText] = useState("");
@@ -78,6 +82,11 @@ function HomePage() {
         };
         setIsConnected(false);
     };
+    const showRating = () => {
+        setSelectedRating(0);
+        setHoveredRating(0);
+        setIsRatingOpen(true);
+    }
 
     const formatDateTime = (value) => {
         if (!value) return "Не указано";
@@ -206,7 +215,50 @@ function HomePage() {
         const data = await response.json();
         setMessages(data.messages || []);
     }
+    const sendRating = async () => {
+        if (selectedRating === 0) {
+            alert("Пожалуйста, выберите оценку");
+            return;
+        }
 
+        const backendUrl = "http://localhost:8001";
+        const access_token = localStorage.getItem("access_token");
+        
+        setSubmittingRating(true);
+        try {
+            const response = await fetch(`${backendUrl}/set-rating?add_rating=${selectedRating}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${access_token}`,
+                }
+            });
+
+            if (response.ok) {
+                setIsRatingOpen(false);
+                setSelectedRating(0);
+                setHoveredRating(0);
+            } else {
+                const error = await response.json();
+                alert("Ошибка: " + (error.detail || "Не удалось отправить оценку"));
+            }
+        } catch (err) {
+            alert("Ошибка сети: " + err.message);
+        } finally {
+            setSubmittingRating(false);
+        }
+    }
+
+    const getRatingLabel = (rating) => {
+        const labels = {
+            1: "Ужасно",
+            2: "Плохо",
+            3: "Нормально",
+            4: "Хорошо",
+            5: "Отлично"
+        };
+        return labels[rating] || "";
+    }
     const sendMessage = () => {
         if (!ws || ws.readyState !== WebSocket.OPEN || !message.trim()) {
             return;
@@ -425,7 +477,7 @@ const closeVerdict = async () => {
                                     </div>
                                 ) : (
                                     <div className="detailed-actions">
-                                        <button>Оценить</button>
+                                        <button onClick={showRating}>Оценить</button>
                                     </div>
                                 )
                             ): (
@@ -435,7 +487,9 @@ const closeVerdict = async () => {
                                     </div>
                                 ) : (
                                     <div className="detailed-actions">
-                                        <button>Оценить</button>
+                                        <button onClick={showRating}>
+                                            Оценить
+                                        </button>
                                     </div>
                                 )
                             )}
@@ -539,7 +593,71 @@ const closeVerdict = async () => {
                     </div>
                 </div>
             )}
+            {isRatingOpen && (
+                <div className="request-detailed-overlay" onClick={() => {
+                    setIsRatingOpen(false);
+                    setSelectedRating(0);
+                    setHoveredRating(0);
+                }}>
+                    <div
+                        className="rating-modal"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            className="detailed-close"
+                            onClick={() => {
+                                setIsRatingOpen(false);
+                                setSelectedRating(0);
+                                setHoveredRating(0);
+                            }}
+                        >
+                            ×
+                        </button>
+                        <h2 className="rating-title">Оцените заявку</h2>
+                        <p className="rating-subtitle">Выберите оценку от 1 до 5</p>
+                        
+                        <div className="rating-stars-container">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                    key={star}
+                                    className={`rating-star ${selectedRating >= star ? 'selected' : ''} ${hoveredRating >= star && selectedRating === 0 ? 'hovered' : ''}`}
+                                    onClick={() => setSelectedRating(star)}
+                                    onMouseEnter={() => setHoveredRating(star)}
+                                    onMouseLeave={() => setHoveredRating(0)}
+                                    type="button"
+                                >
+                                    ★
+                                </button>
+                            ))}
+                        </div>
 
+                        <p className="rating-label">
+                            {(selectedRating > 0 || hoveredRating > 0) ? getRatingLabel(selectedRating || hoveredRating) : '\u00A0'}
+                        </p>
+
+                        <div className="rating-actions">
+                            <button
+                                onClick={() => {
+                                    setIsRatingOpen(false);
+                                    setSelectedRating(0);
+                                    setHoveredRating(0);
+                                }}
+                                className="rating-cancel-btn"
+                                disabled={submittingRating}
+                            >
+                                Отмена
+                            </button>
+                            <button
+                                onClick={sendRating}
+                                className="rating-submit-btn"
+                                disabled={selectedRating === 0 || submittingRating}
+                            >
+                                {submittingRating ? "Отправка..." : "Отправить оценку"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {verdictResult && verdictResult.punishments && (
                 <div className="request-detailed-overlay" onClick={() => setVerdictResult(null)}>
                     <div
