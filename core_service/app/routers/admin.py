@@ -134,3 +134,36 @@ async def punish_user(
     punishment_info["punishment"] = success
 
     return punishment_info
+
+
+@admin_router.post("/complaints")
+async def complaints_count(session: SessionDep, authorization: str = Header(None)):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Token is not given")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid token format")
+
+    access_token = authorization.split()[1]
+    access_token = security._decode_token(token=access_token)
+
+    if access_token.role == "admin":
+        request_data = await session.execute(select(ComplaintModel))
+    else:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    all_complaints = request_data.scalars().all()
+
+    if not all_complaints:
+        return {"message": "No Complaints found"}
+
+    count_dict = {
+        "onwait": 0,
+        "closed": 0,
+        "pending": 0,
+    }
+
+    for compl in all_complaints:
+        type = compl.complaint_type
+        count_dict[type] += 1
+
+    return count_dict
