@@ -150,7 +150,8 @@ function RequestFeed() {
             padding: 0,
             minHeight: "100vh",
             overflow: "hidden",
-        }}>
+            }}>
+            <>
             <div className="header_div">
                 <p className="header-p">
                     Лента заявок
@@ -161,66 +162,70 @@ function RequestFeed() {
                 <div className="empty_state">
                     <p>Заявок пока нет</p>
                 </div>
-            ) : (
-                <div className="request-list">
-                    {requests.map((app) => (
-                        <div key={app.id} className="container-out">
+                ) : (
+                    <div className="request-list">
+                        {requests.map((app) => (
+                            <div key={app.id} className="container-out">
 
-                                <div className="couple">
-                                    <p className="p1">Имя заказчика</p>
-                                    <p className="p2">{app.full_name}</p>
-                                </div>
-                                <div className="couple">
-                                    <p className="p1">Тип услуги</p>
-                                    <p className="p2">{serviceType[app.service_type]}</p>
-                                </div>
-                                <div className="couple">
-                                    <p className="p1">Желаемое время выполнения</p>
-                                    <p className="p2">{formatDateTime(app.desired_time)}</p>
-                                </div>
+                                    <div className="couple">
+                                        <p className="p1">Имя заказчика</p>
+                                        <p className="p2">{app.full_name}</p>
+                                    </div>
+                                    <div className="couple">
+                                        <p className="p1">Тип услуги</p>
+                                        <p className="p2">{serviceType[app.service_type]}</p>
+                                    </div>
+                                    <div className="couple">
+                                        <p className="p1">Желаемое время выполнения</p>
+                                        <p className="p2">{formatDateTime(app.desired_time)}</p>
+                                    </div>
 
-                                {(serviceType[app.serviceType]==="delivery_food" || serviceType[app.serviceType]==="delivery_drugs") ?
-                                (<>
-                                    <div className="couple">
-                                    <p className="p1">Адрес</p>
-                                    <p className="p2">{app.address}</p>
-                                </div>
-                                    <div className="couple">
-                                    <p className="p1">Список товаров</p>
-                                    <p className="p2">{app.listProducts}</p>
-                                    </div>
-                                    </>):(serviceType[app.serviceType]==="mobility_help" ?
-                                        (<>
-                                    <div className="couple">
-                                    <p className="p1">Откуда</p>
-                                    <p className="p2">{app.address}</p>
-                                </div>
-                                    <div className="couple">
-                                    <p className="p1">Куда</p>
-                                    <p className="p2">{app.destinationAdress}</p>
-                                    </div>
-                                    </>):(
-                                    <div className="couple">
-                                    <p className="p1">Адрес</p>
-                                    <p className="p2">{app.address}</p>
-                                </div>
-                                    )
+                                    {(serviceType[app.serviceType]==="delivery_food" || serviceType[app.serviceType]==="delivery_drugs") ?
+                                    (
+                                    <>
+                                        <div className="couple">
+                                        <p className="p1">Адрес</p>
+                                        <p className="p2">{app.address}</p>
+                                        </div>
+                                        <div className="couple">
+                                        <p className="p1">Список товаров</p>
+                                        <p className="p2">{app.listProducts}</p>
+                                        </div>
+                                    </>):((serviceType[app.serviceType]==="mobility_help") ?
+                                        (
+                                        <>
+                                            <div className="couple">
+                                            <p className="p1">Откуда</p>
+                                            <p className="p2">{app.address}</p>
+                                            </div>
+                                            <div className="couple">
+                                            <p className="p1">Куда</p>
+                                            <p className="p2">{app.destinationAdress}</p>
+                                            </div>
+                                        </>
+                                        ):(
+                                        <div className="couple">
+                                        <p className="p1">Адрес</p>
+                                        <p className="p2">{app.address}</p>
+                                        </div>
+                                        )
                                     )}
-                                <div className="couple">
-                                    <p className="p1">Комментарий</p>
-                                    <p className="p2">{app.comment || "Комментарий отсутствует"}</p>
-                                </div>
-                                <button 
-                                    className="button_request"
-                                    onClick={() => handleAcceptRequest(app.id)}
-                                >
-                                    Принять заявку
-                                </button>
+                                    <div className="couple">
+                                        <p className="p1">Комментарий</p>
+                                        <p className="p2">{app.comment || "Комментарий отсутствует"}</p>
+                                    </div>
+                                    <button 
+                                        className="button_request"
+                                        onClick={() => handleAcceptRequest(app.id)}
+                                    >
+                                        Принять заявку
+                                    </button>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                            
+                        ))}
+                    </div>
+                )
+            }
             <button
                 className="back-button"
                 onClick={() => navigate(-1)}
@@ -228,6 +233,7 @@ function RequestFeed() {
             >
                 ← Назад
             </button>
+            </>
         </div>
     );
 }

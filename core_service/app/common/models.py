@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import ForeignKey, String, Integer, DateTime, Boolean
+from sqlalchemy import ForeignKey, String, Integer, DateTime, Boolean, Float
 import datetime
 from sqlalchemy.sql import func
 
@@ -129,7 +129,7 @@ class RegisterRequest(BaseModel):
             datetime.fromisoformat(value)
             return value
         except ValueError:
-<<<<<<< HEAD
+
             raise ValueError(f"Invalid datetime format. Expected ISO format like '2025-11-17T12:00', got '{value}'")
 
 class ComplaintRequest(BaseModel):

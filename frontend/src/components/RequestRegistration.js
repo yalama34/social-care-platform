@@ -63,6 +63,7 @@ function RequestRegistration() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${access_token}`,
                 },
                 body: JSON.stringify(requestBody)
             });

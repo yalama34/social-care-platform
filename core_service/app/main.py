@@ -16,7 +16,7 @@ from .routers.rating import rating_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)  # Удаляет все таблицы (ВНИМАНИЕ: удалит данные!)
+        # await conn.run_sync(Base.metadata.drop_all)  # Удаляет все таблицы (ВНИМАНИЕ: удалит данные!)
         await conn.run_sync(Base.metadata.create_all)
     print("✅ Таблицы пересозданы")
     yield

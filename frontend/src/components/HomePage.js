@@ -25,12 +25,27 @@ function HomePage() {
     const [complaintType, setComplaintType] = useState("chat");
     const [submittingComplaint, setSubmittingComplaint] = useState(false);
     const [verdictResult, setVerdictResult] = useState(null);
+    const [currentUserId, setCurrentUserId] = useState(null);
     const role = localStorage.getItem("role");
 
+    const getUserIdFromToken = (token) => {
+        if (!token) return null;
+        try {
+            const payload = token.split('.')[1];
+            const decoded = JSON.parse(atob(payload));
+            return decoded.user_id || null;
+        } catch (err) {
+            return null;
+        }
+    };
 
     const getRequests = async () => {
         const backendUrl = "http://localhost:8001";
         const access_token = localStorage.getItem("access_token");
+        const userId = getUserIdFromToken(access_token);
+        if (userId) {
+                setCurrentUserId(userId);
+        }        
         setLoading(true);
         try {
             const request = await fetch(backendUrl + `/home/${role}`, {
@@ -52,7 +67,10 @@ function HomePage() {
         }
     };
 
-   const serviceType = {
+    
+
+
+    const serviceType = {
         cleaning: "Уборка",
         rubbish: "Вынос мусора",
         delivery_food: "Доставка продуктов",
@@ -67,7 +85,6 @@ function HomePage() {
         completed: "Завершено",
         cancelled: "Отменено",
     };
-
 
     const showDetails = (request) => {
         setSelectedRequest(request);
@@ -85,8 +102,6 @@ function HomePage() {
         };
         setIsConnected(false);
     };
-
-
 
     const showRating = () => {
         setSelectedRating(0);
@@ -139,7 +154,6 @@ function HomePage() {
         await getRequests();
     }
 
-
     const cancelRequest = async (requestId) => {
         const backendUrl = "http://localhost:8001";
         const access_token = localStorage.getItem("access_token");
@@ -171,13 +185,13 @@ function HomePage() {
                     return (
                         <div key={request.id} className="request-card">
                             <p>{serviceStatus[request.status]}</p>
-                            <p>{serviceType[request.service_type]}</p>
-                            <p>Адрес: {request.address}</p>
+                            <p><strong>{serviceType[request.service_type]}</strong></p>
+                            <p><strong>Адрес:</strong> {FormatText(request.address)}</p>
                             <p>
-                                Комментарий{" "}
-                                {request.comment || "Нет комментария"}
+                                <strong>Комментарий{" "} </strong>
+                                {FormatText(request.comment) || "Нет комментария"}
                             </p>
-                            <p>Желаемое время: {timeString}</p>
+                            <p><strong>Желаемое время:</strong> {timeString}</p>
                             <button
                                 className="request-details-button"
                                 onClick={() => showDetails(request)}
@@ -191,8 +205,6 @@ function HomePage() {
             </div>
         );
     };
-
-
 
     const renderLink = (role) => {
         if (role === "user") {
@@ -227,18 +239,29 @@ function HomePage() {
         const data = await response.json();
         setMessages(data.messages || []);
     }
+
     const sendRating = async () => {
         if (selectedRating === 0) {
             alert("Пожалуйста, выберите оценку");
             return;
         }
-
+        if (!selectedRequest) {
+            alert("Ошибка: заявка не выбрана");
+            return;
+        }
+        const ratedUserId = role === "user" ?
+        selectedRequest.volunteer_id :
+        selectedRequest.user_id;
+        if (!ratedUserId  || ratedUserId ===-1) {
+            alert("Невозможно оценить нет другого участника");
+            return;
+        }
         const backendUrl = "http://localhost:8001";
         const access_token = localStorage.getItem("access_token");
 
         setSubmittingRating(true);
         try {
-            const response = await fetch(`${backendUrl}/set-rating?add_rating=${selectedRating}`, {
+            const response = await fetch(`${backendUrl}/set-rating?add_rating=${selectedRating}&rated_user_id=${ratedUserId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -271,6 +294,7 @@ function HomePage() {
         };
         return labels[rating] || "";
     }
+
     const sendMessage = () => {
         if (!ws || ws.readyState !== WebSocket.OPEN || !message.trim()) {
             return;
@@ -325,80 +349,73 @@ function HomePage() {
         }
     }
 
-const closeVerdict = async () => {
-    if (verdictResult.confidence >= 90) {
-        const backendUrl = "http://localhost:8001";
-        const access_token = localStorage.getItem("access_token");
+    const closeVerdict = async () => {
+        if (verdictResult.confidence >= 90) {
+            const backendUrl = "http://localhost:8001";
+            const access_token = localStorage.getItem("access_token");
 
-        for (const punishment of verdictResult.punishments) {
-            if (punishment.verdict !== "innocent") {
-                await fetch(backendUrl + `/verdict/${punishment.verdict}/${punishment.user_id}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${access_token}`,
-                    }
-                });
+            for (const punishment of verdictResult.punishments) {
+                if (punishment.verdict !== "innocent") {
+                    await fetch(backendUrl + `/verdict/${punishment.verdict}/${punishment.user_id}`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${access_token}`,
+                        }
+                    });
+                }
             }
         }
+        setVerdictResult(null);
     }
-    setVerdictResult(null);
-}
 
     useEffect(() => {
+        const access_token = localStorage.getItem("access_token");
+        const userId = getUserIdFromToken(access_token);
+        if (userId) {
+            setCurrentUserId(userId);
+        }
         getRequests();
     }, []);
 
-useEffect(() => {
-        if (!selectedRequest) return;
-        const access_token = localStorage.getItem("access_token");
-        const socket = new WebSocket(`ws://localhost:8001/ws/${role}/${selectedRequest.id}?access_token=${access_token}`);
-        SetWs(socket);
-        setRequestId(selectedRequest.id);
-        getChatHistory(selectedRequest.id);
+    useEffect(() => {
+            if (!selectedRequest) return;
+            const access_token = localStorage.getItem("access_token");
+            const socket = new WebSocket(`ws://localhost:8001/ws/${role}/${selectedRequest.id}?access_token=${access_token}`);
+            SetWs(socket);
+            setRequestId(selectedRequest.id);
+            getChatHistory(selectedRequest.id);
 
-        socket.onopen = () => setIsConnected(true);
+            socket.onopen = () => setIsConnected(true);
 
-        socket.onmessage = (event) => {
-            const [role, message] = event.data.split("-");
-            setMessages(prev => {
-                const nextMessages = [...prev, { role, message }];
-                return nextMessages;
-            });
-        };
+            socket.onmessage = (event) => {
+                const [role, message] = event.data.split("-");
+                setMessages(prev => {
+                    const nextMessages = [...prev, { role, message }];
+                    return nextMessages;
+                });
+            };
 
-        socket.onerror = () => {
-            console.error("WebSocket error");
-            setIsConnected(false);
-        };
-        socket.onclose = () => setIsConnected(false);
+            socket.onerror = () => {
+                console.error("WebSocket error");
+                setIsConnected(false);
+            };
+            socket.onclose = () => setIsConnected(false);
 
-        return () => {
-            socket.close();
-            SetWs(null);
-            setIsConnected(false);
-        };
-    }, [role, isDetailedOpen, selectedRequest]);
+            return () => {
+                socket.close();
+                SetWs(null);
+                setIsConnected(false);
+            };
+        }, [role, isDetailedOpen, selectedRequest]);
 
-        socket.onerror = () => {
-            console.error("WebSocket error");
-            setIsConnected(false);
-        };
-        socket.onclose = () => setIsConnected(false);
-
-        return () => {
-            socket.close();
-            SetWs(null);
-            setIsConnected(false);
-        };
-    }, [role, isDetailedOpen, selectedRequest]);
 
 
     return (
         <div className="home-page-container">
             <div className="div-header">
                 <p className="p-header">Главная</p>
-                <Link to={"/profile"} className="link-to-profile">
+                <Link to={`/profile/${currentUserId}`} className="link-to-profile">
                     Профиль
                 </Link>
             </div>
@@ -429,17 +446,16 @@ useEffect(() => {
                 <div className="button-container">{renderLink(role)}</div>
             </div>
 
-<div className="footer">
+            <div className="footer">
                 <p className="footer-text">Связаться с нами</p>
             </div>
 
 
-       {isDetailedOpen && selectedRequest && (
+            {isDetailedOpen && selectedRequest && (
                 <div className="request-detailed-overlay" onClick={closeDetailed}>
-                    <div
-                        className="request-detailed-layout"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                    <div className="request-detailed-layout"
+                        onClick={(e) => e.stopPropagation()}>
+
                         <div className="request-detailed">
                             <button className="detailed-close" onClick={closeDetailed}>
                                 ×
@@ -464,6 +480,7 @@ useEffect(() => {
                                 <strong>Желаемое время: </strong>
                                 {formatDateTime(selectedRequest.desired_time)}
                             </p>
+
                             {role === "user" ? (
                                 <p>
                                     <strong>Волонтёр: </strong>
@@ -539,83 +556,73 @@ useEffect(() => {
                 </div>
             )}
 
-
-
-        </div>
-    );
-}
-
-{showComplaintModal && (
-                <div className="request-detailed-overlay" onClick={() => setShowComplaintModal(false)}>
-                    <div
-                        className="complaint-modal"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <button
-                            className="detailed-close"
-                            onClick={() => setShowComplaintModal(false)}
-                        >
-                            ×
-                        </button>
-                        <h2>Подать жалобу</h2>
-                        <div className="complaint-form">
-                            <label>
-                                <strong>Тип жалобы:</strong>
-                                <select
-                                    value={complaintType}
-                                    onChange={(e) => setComplaintType(e.target.value)}
-                                >
-                                    <option value="chat">Чат (переписка)</option>
-                                    <option value="request">Заявка (выполнение)</option>
-                                    <option value="profile">Профиль</option>
-                                </select>
-                            </label>
-                            <label>
-                                <strong>Опишите проблему:</strong>
-                                <textarea
-                                    value={complaintText}
-                                    onChange={(e) => setComplaintText(e.target.value)}
-                                    placeholder="Подробно опишите причину жалобы..."
-                                    rows={5}
-                                />
-                            </label>
-                            <div className="complaint-actions">
-                                <button
-                                    onClick={() => setShowComplaintModal(false)}
-                                    className="cancel-btn"
-                                >
-                                    Отмена
-                                </button>
-                                <button
-                                    onClick={sendComplaint}
-                                    disabled={submittingComplaint || !complaintText.trim()}
-                                    className="submit-btn"
-                                >
-                                    {submittingComplaint ? "Отправка..." : "Отправить"}
-                                </button>
+            {showComplaintModal && (
+                    <div className="request-detailed-overlay" onClick={() => setShowComplaintModal(false)}>
+                        <div
+                            className="complaint-modal"
+                            onClick={(e) => e.stopPropagation()}>
+                            <button
+                                className="detailed-close"
+                                onClick={() => setShowComplaintModal(false)}
+                            >
+                                ×
+                            </button>
+                            <h2>Подать жалобу</h2>
+                            <div className="complaint-form">
+                                <label>
+                                    <strong>Тип жалобы:</strong>
+                                    <select
+                                        value={complaintType}
+                                        onChange={(e) => setComplaintType(e.target.value)}
+                                    >
+                                        <option value="chat">Чат (переписка)</option>
+                                        <option value="request">Заявка (выполнение)</option>
+                                        <option value="profile">Профиль</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    <strong>Опишите проблему:</strong>
+                                    <textarea
+                                        value={complaintText}
+                                        onChange={(e) => setComplaintText(e.target.value)}
+                                        placeholder="Подробно опишите причину жалобы..."
+                                        rows={5}
+                                    />
+                                </label>
+                                <div className="complaint-actions">
+                                    <button
+                                        onClick={() => setShowComplaintModal(false)}
+                                        className="cancel-btn"
+                                    >
+                                        Отмена
+                                    </button>
+                                    <button
+                                        onClick={sendComplaint}
+                                        disabled={submittingComplaint || !complaintText.trim()}
+                                        className="submit-btn"
+                                    >
+                                        {submittingComplaint ? "Отправка..." : "Отправить"}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
             {isRatingOpen && (
                 <div className="request-detailed-overlay" onClick={() => {
                     setIsRatingOpen(false);
                     setSelectedRating(0);
-                    setHoveredRating(0);
-                }}>
+                    setHoveredRating(0);}}>
                     <div
                         className="rating-modal"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                        onClick={(e) => e.stopPropagation()}>
                         <button
                             className="detailed-close"
                             onClick={() => {
                                 setIsRatingOpen(false);
                                 setSelectedRating(0);
                                 setHoveredRating(0);
-                            }}
-                        >
+                            }}>
                             ×
                         </button>
                         <h2 className="rating-title">Оцените заявку</h2>
@@ -669,8 +676,7 @@ useEffect(() => {
                 <div className="request-detailed-overlay" onClick={() => setVerdictResult(null)}>
                     <div
                         className="verdict-modal"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                        onClick={(e) => e.stopPropagation()}>
                         <button
                             className="detailed-close"
                             onClick={() => setVerdictResult(null)}
@@ -733,6 +739,7 @@ useEffect(() => {
                     </div>
                 </div>
             )}
+        
         </div>
     );
 }
