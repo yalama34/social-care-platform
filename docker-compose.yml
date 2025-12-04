@@ -34,8 +34,8 @@ services:
       - YANDEX_FOLDER_ID=${YANDEX_FOLDER_ID}
       - YANDEX_API_KEY=${YANDEX_API_KEY}
     ports:
-      - "8001:8000"
-    restart: on-failure # -> unless-stopped
+      - "8001:8001"
+    restart: unless-stopped
 
   db:
     image: postgres:16.4
@@ -67,11 +67,6 @@ services:
       - auth
       - core
     restart: unless-stopped
-    volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
 
 volumes:
   postgres_data:
-
-
