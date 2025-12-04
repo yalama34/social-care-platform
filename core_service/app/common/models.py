@@ -46,7 +46,7 @@ class RequestModel(Base):
     comment: Mapped[str] = mapped_column(String)
     desired_time: Mapped[datetime.datetime] = mapped_column(DateTime)
     status: Mapped[str] = mapped_column(String, default="onwait")
-    volunteer_id: Mapped[Optional[int]] = mapped_column(Integer, default=-1)
+    volunteer_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), default=-1)
 
 class ChatModel(Base):
     __tablename__ = 'chats'
@@ -70,7 +70,7 @@ class ComplaintModel(Base):
     details: Mapped[str] = mapped_column(String)
     ai_response: Mapped[str] = mapped_column(String)
     status: Mapped[str] = mapped_column(String, default="pending")
-    admin_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    admin_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
     admin_verdict: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=func.now())
 
