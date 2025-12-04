@@ -181,7 +181,7 @@ function RequestFeed() {
                                     <p className="p2">{formatDateTime(app.desired_time)}</p>
                                 </div>
 
-                                {(serviceType[app.serviceType]==="delivery_food" || serviceType[app.serviceType]==="delivery_drugs") ?
+                                {(serviceType[app.service_type]==="delivery_food" || serviceType[app.service_type]==="delivery_drugs") ?
                                 (<>
                                     <div className="couple">
                                     <p className="p1">Адрес</p>
@@ -189,9 +189,9 @@ function RequestFeed() {
                                 </div>
                                     <div className="couple">
                                     <p className="p1">Список товаров</p>
-                                    <p className="p2">{app.listProducts}</p>
+                                    <p className="p2">{app.list_products || "Не указан"}</p>
                                     </div>
-                                    </>):(serviceType[app.serviceType]==="mobility_help" ?
+                                    </>):(serviceType[app.service_type]==="mobility_help" ?
                                         (<>
                                     <div className="couple">
                                     <p className="p1">Откуда</p>
@@ -199,15 +199,12 @@ function RequestFeed() {
                                 </div>
                                     <div className="couple">
                                     <p className="p1">Куда</p>
-                                    <p className="p2">{app.destinationAdress}</p>
+                                    <p className="p2">{app.destination_address || "Не указан"}</p>
                                     </div>
                                     </>):(
                                     <div className="couple">
                                     <p className="p1">Адрес</p>
                                     <p className="p2">{app.address}</p>
-                                <div className="couple">
-                                    <p className="p1">Желаемое время выполнения</p>
-                                    <p className="p2">{formatDateTime(app.desired_time)}</p>
                                 </div>
                                     )
                                     )}

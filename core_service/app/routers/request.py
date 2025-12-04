@@ -1,6 +1,6 @@
 from ..common.database import SessionDep
 from ..common.models import RegisterRequest, RequestModel, UserModel
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Body
 from datetime import timedelta, datetime
 from sqlalchemy import select
 from authx import AuthX, AuthXConfig
@@ -14,7 +14,7 @@ security = AuthX(config=config)
 request_router = APIRouter(prefix="/request", tags=["request"])
 
 @request_router.post("/register")
-async def register_request(session: SessionDep, request: RegisterRequest, authorization: str = Header(None)):
+async def register_request(session: SessionDep, request: RegisterRequest = Body(embed=False), authorization: str = Header(None)):
     request_service = RequestService(session = session)
     try:
         if not authorization:
@@ -23,8 +23,7 @@ async def register_request(session: SessionDep, request: RegisterRequest, author
             raise HTTPException(status_code=401, detail="Invalid token format")
         access_token = authorization.split()[1]
         access_token = security._decode_token(token=access_token)
-
-        await request_service.register_request(access_token=access_token, request=request)
+        await request_service.register_request(access_token, request)
         return {
             "success": True
         }

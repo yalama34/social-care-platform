@@ -42,6 +42,8 @@ async def user_home(session : SessionDep, role: str, authorization: str = Header
             "full_name": req.full_name,
             "service_type": req.service_type,
             "address": req.address,
+            "destination_address": req.destination_address,
+            "list_products": req.list_products,
             "comment": req.comment,
             "desired_time": req.desired_time.isoformat() if hasattr(req.desired_time, 'isoformat') else str(
                 req.desired_time),

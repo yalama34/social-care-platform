@@ -462,10 +462,34 @@ const closeVerdict = async () => {
                                 <strong>Тип услуги: </strong>
                                 {serviceType[selectedRequest.service_type]}
                             </p>
-                            <p>
-                                <strong>Адрес: </strong>
-                                {selectedRequest.address}
-                            </p>
+                            {(selectedRequest.service_type === "delivery_food" || selectedRequest.service_type === "delivery_drugs") ? (
+                                <>
+                                    <p>
+                                        <strong>Адрес: </strong>
+                                        {selectedRequest.address}
+                                    </p>
+                                    <p>
+                                        <strong>Список товаров: </strong>
+                                        {selectedRequest.list_products || "Не указан"}
+                                    </p>
+                                </>
+                            ) : selectedRequest.service_type === "mobility_help" ? (
+                                <>
+                                    <p>
+                                        <strong>Откуда: </strong>
+                                        {selectedRequest.address}
+                                    </p>
+                                    <p>
+                                        <strong>Куда: </strong>
+                                        {selectedRequest.destination_address || "Не указан"}
+                                    </p>
+                                </>
+                            ) : (
+                                <p>
+                                    <strong>Адрес: </strong>
+                                    {selectedRequest.address}
+                                </p>
+                            )}
                             <p>
                                 <strong>Комментарий: </strong>
                                 {selectedRequest.comment || "Нет комментария"}

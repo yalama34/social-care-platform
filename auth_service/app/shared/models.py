@@ -43,10 +43,12 @@ class RequestModel(Base):
     full_name: Mapped[str] = mapped_column(String)
     service_type: Mapped[str] = mapped_column(String)
     address: Mapped[str] = mapped_column(String)
+    destination_address: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
+    list_products: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
     comment: Mapped[str] = mapped_column(String)
     desired_time: Mapped[datetime.datetime] = mapped_column(DateTime)
     status: Mapped[str] = mapped_column(String, default="onwait")
-    volunteer_id: Mapped[int] = mapped_column(Integer, default=-1)
+    volunteer_id: Mapped[Optional[int]] = mapped_column(Integer, default=-1)
 
 
 class ChatModel(Base):
@@ -101,12 +103,13 @@ class EndLoginRequest(BaseModel):
     temp_token: str
 
 class RegisterRequest(BaseModel):
-    access_token: str
     address: str
     comment: str
     desired_time: str
     full_name: str
     service_type: str
+    destination_address: Optional[str] = None
+    list_products: Optional[str] = None
     @field_validator('desired_time')
     def validate_desired_time(cls, value):
         """Валидируем, что строка в формате ISO datetime"""

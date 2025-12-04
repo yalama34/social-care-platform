@@ -109,31 +109,10 @@ function Profile() {
                                 Отмена
                             </button>
                         </div>
-                    <div>
-                        <p>О себе:</p>
-                        <input value={about || ''}
-                        onChange={(e) => setAbout(e.target.value)}></input>
-                        <button onClick={async () => {
-                            setIsEditing(false)
-                            const request = await fetch(backendUrl + '/profile/about', {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${access_token}`,
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({about: about.trim()})
-                            });
-
-                        }}>Подтвердить</button>
-                        <button onClick={() => {
-                            setIsEditing(false);
-                            setAbout(profileData.about || 'Информация отсутствует');
-                        }}>Отмена</button>
                     </div>
                 )
-            } else{
+            } else {
                 return (
-                    <div>
                     <div className="profile-section">
                         <p className="profile-label">О себе</p>
                         <p className="profile-text">
@@ -162,7 +141,6 @@ function Profile() {
                 </div>
             );
         }
-    };
 
         const normalizedRating = Math.min(5, Math.max(0, ratingValue));
 
@@ -196,49 +174,48 @@ function Profile() {
             <p>Профиль</p>
             <p>{username}</p>
             <div className="profile-page">
-            <div className="profile-header">
-                <p className="profile-title">Профиль</p>
-                <Link to={`/home/${role}`} className="profile-back">
-                    На главную
-                </Link>
-            </div>
-
-            <div className="profile-content">
-                <div className="profile-card">
-                    <p className="profile-name">{username}</p>
-                    {profileData && (
-                        <p className="profile-role">
-                            Роль: {profileData.role === "volunteer" ? "Волонтёр" : "Пользователь"}
-                        </p>
-                    )}
-
-                    {loading ? (
-                        <p className="profile-loading">Загрузка...</p>
-                    ) : (
-                        renderAbout()
-                    )}
+                <div className="profile-header">
+                    <p className="profile-title">Профиль</p>
+                    <Link to={`/home/${role}`} className="profile-back">
+                        На главную
+                    </Link>
                 </div>
-            </div>
 
-            {ratingLoading ? (
-                <p>Загрузка рейтинга...</p>
-            ) : (
-                <div className="rating-display">
-                    {renderStars(rating?.rating || 0)}
-                    <div className="rating-details">
-                        <span className="rating-value">{rating?.rating ? rating.rating.toFixed(1) : '0.0'}</span>
-                        <span className="rating-count">
-                            {rating?.rating_count > 0 ? (
-                                `(${rating.rating_count} ${rating.rating_count === 1 ? 'оценка' : rating.rating_count < 5 ? 'оценки' : 'оценок'})`
-                            ) : (
-                                '(пока нет оценок)'
-                            )}
-                        </span>
+                <div className="profile-content">
+                    <div className="profile-card">
+                        <p className="profile-name">{username}</p>
+                        {profileData && (
+                            <p className="profile-role">
+                                Роль: {profileData.role === "volunteer" ? "Волонтёр" : "Пользователь"}
+                            </p>
+                        )}
+
+                        {loading ? (
+                            <p className="profile-loading">Загрузка...</p>
+                        ) : (
+                            renderAbout()
+                        )}
                     </div>
                 </div>
-            )}
 
-            {loading ? <p>Загрузка...</p> : renderAbout()}
+                {ratingLoading ? (
+                    <p>Загрузка рейтинга...</p>
+                ) : (
+                    <div className="rating-display">
+                        {renderStars(rating?.rating || 0)}
+                        <div className="rating-details">
+                            <span className="rating-value">{rating?.rating ? rating.rating.toFixed(1) : '0.0'}</span>
+                            <span className="rating-count">
+                                {rating?.rating_count > 0 ? (
+                                    `(${rating.rating_count} ${rating.rating_count === 1 ? 'оценка' : rating.rating_count < 5 ? 'оценки' : 'оценок'})`
+                                ) : (
+                                    '(пока нет оценок)'
+                                )}
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </div>
 
             <button
                 className="back-button"
@@ -248,9 +225,7 @@ function Profile() {
                 ← Назад
             </button>
         </div>
-
     );
-
-
 }
+
 export default Profile;

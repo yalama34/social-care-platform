@@ -9,8 +9,45 @@ from .routers.chat import chat_router
 from .routers.moderation import moderation_router
 from .routers.verdict import verdict_router
 from .routers.rating import rating_router
+from .common.database import engine
+from contextlib import asynccontextmanager
+from sqlalchemy import text
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Добавляем недостающие колонки, если их нет
+    async with engine.begin() as conn:
+        try:
+            # Проверяем и добавляем destination_address
+            await conn.execute(text("""
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_name='requests' AND column_name='destination_address'
+                    ) THEN
+                        ALTER TABLE requests ADD COLUMN destination_address VARCHAR;
+                    END IF;
+                END $$;
+            """))
+            # Проверяем и добавляем list_products
+            await conn.execute(text("""
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_name='requests' AND column_name='list_products'
+                    ) THEN
+                        ALTER TABLE requests ADD COLUMN list_products VARCHAR;
+                    END IF;
+                END $$;
+            """))
+            print("✅ Колонки проверены/добавлены")
+        except Exception as e:
+            print(f"⚠️ Ошибка при проверке колонок: {e}")
+    yield
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:8001"],

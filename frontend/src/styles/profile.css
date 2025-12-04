@@ -1,10 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
 
+* {
+    font-family: 'Jost', sans-serif;
+}
+
 .profile-page {
     min-height: 100vh;
     background-color: white;
-* {
-    font-family: 'Jost', sans-serif;
+}
+
+.profile-page * {
+    box-sizing: border-box;
 }
 
 .rating-display {
@@ -15,15 +21,6 @@
     margin: 20px 0;
 }
 
-.profile-page * {
-    box-sizing: border-box;
-}
-
-.profile-header {
-    background-color: #FFE851;
-    padding: 24px 32px;
-    width: 100%;
-    position: relative;
 .rating-stars-display {
     display: flex;
     gap: 6px;
@@ -31,8 +28,6 @@
     justify-content: center;
 }
 
-.profile-title {
-    font-size: 24px;
 .star-full {
     font-size: 32px;
     color: #FFD700;
@@ -61,24 +56,31 @@
     text-align: center;
 }
 
-.profile-back {
-    font-size: 14px;
 .rating-count {
     font-size: 16px;
     color: #666;
     font-weight: 500;
-    text-decoration: underline;
 }
 
-.back-button {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    padding: 12px 24px;
+.profile-header {
     background-color: #FFE851;
-    color: #000;
+    padding: 24px 32px;
+    width: 100%;
+    position: relative;
+}
+
+.profile-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.profile-back {
+    font-size: 14px;
+    text-decoration: underline;
     position: absolute;
     left: 32px;
+    top: 24px;
 }
 
 .profile-content {
@@ -98,9 +100,6 @@
 
 .profile-name {
     font-size: 20px;
-    border: none;
-    border-radius: 50px;
-    font-size: 16px;
     font-weight: 700;
     margin: 0 0 6px 0;
 }
@@ -159,21 +158,43 @@
 .profile-btn.primary {
     background-color: #6E6E6E;
     color: white;
-.back-button:hover {
-    background-color: #FFEB7C;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 .profile-btn.secondary {
     background-color: #ffffff;
     color: #000;
     border: 1px solid #cccccc;
-.back-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .profile-loading {
     font-size: 14px;
+}
+
+.back-button {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 12px 24px;
+    background-color: #FFE851;
+    color: #000;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Jost', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.back-button:hover {
+    background-color: #FFEB7C;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.back-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }

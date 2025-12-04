@@ -23,8 +23,6 @@ function RequestRegistration() {
         additional_field = "Список лекарств";
 
     const backendUrl = "http://localhost:8001";
-
-    const backendUrl = "http://localhost:8001";
     const navigate = useNavigate();
     const role = localStorage.getItem("role");
     const access_token = localStorage.getItem("access_token");
@@ -64,22 +62,9 @@ function RequestRegistration() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody)
-        const response = await fetch(backendUrl + '/request/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${access_token}`,
                 },
-                body: JSON.stringify({
-                    full_name: formData.fullName.trim(),
-                    service_type: formData.serviceType,
-                    address: formData.address.trim(),
-                    comment: formData.comment.trim(),
-                    desired_time: formData.desiredTime
-
-                })
+                body: JSON.stringify(requestBody)
             });
         const data = await response.json();
         if (data.success) {

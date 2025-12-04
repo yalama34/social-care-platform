@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import secrets
 from sqlalchemy import select, and_
-from ..common.models import RequestModel, UserModel, RegisterRequest
+from ..common.models import RequestModel, UserModel
 from fastapi import HTTPException
 
 
@@ -9,7 +9,7 @@ class RequestService:
     def __init__(self, session):
         self.session = session
 
-    async def register_request(self, access_token, request: RegisterRequest):
+    async def register_request(self, access_token, request):
         result = await self.session.execute(
             select(UserModel).where(UserModel.id == access_token.user_id)
         )
