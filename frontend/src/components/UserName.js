@@ -1,15 +1,26 @@
 import React,{useState, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
-import '../styles/auth_page.css'
+import '../styles/auth_page.css';
+import Notification from "./Notification";
 
 function UserName() {
     const [username, setUsername] = useState('');
     const navigate = useNavigate();
     const backendUrl = "http://localhost:8000";
     let [errorMessage, setErrorMessage] = useState("");
+    const [notification, setNotification] = useState({ message: null, type: 'error' });
+
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+    };
+
+    const hideNotification = () => {
+        setNotification({ message: null, type: 'error' });
+    };
+
     const handleUsername = async () => {
         if (!username.trim()){
-            alert("Введите Имя");
+            showNotification("Введите Имя", 'warning');
         return;
         }
         const temp_token = localStorage.getItem('temp_token');
@@ -39,8 +50,10 @@ function UserName() {
             localStorage.removeItem('temp_token');
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('full_name', username.trim());
-            alert(data.access_token);
-            navigate(`/home/${role}`);
+            showNotification("Регистрация успешно завершена!", 'success');
+            setTimeout(() => {
+                navigate(`/home/${role}`);
+            }, 1000);
         }
     useEffect(() => {
         setErrorMessage("");
@@ -76,7 +89,14 @@ function UserName() {
                 </div>
 
             </>
-
+            {notification.message && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={hideNotification}
+                    duration={5000}
+                />
+            )}
 
         </div>
 

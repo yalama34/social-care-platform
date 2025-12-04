@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
+@import './error.css';
 
 * {
     font-family: 'Jost';
@@ -30,12 +31,29 @@
 }
 
 .retry-button{
-    border-radius: 55px;
-    width: 20%;
-    padding: 3% 1%;
-    font-size: 100%;
+    background-color: #FFE851;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 32px;
+    font-size: 16px;
     font-weight: 600;
+    font-family: 'Jost', sans-serif;
+    color: #000;
+    cursor: pointer;
     text-align: center;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+    background-color: #FFEB7C;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+}
+
+.retry-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 .empty_state {
     position: absolute;
@@ -46,13 +64,14 @@
     font-weight: 500;
 }
 .error-state {
-    position: absolute;
-    top: 50%;
-    text-align: center;
-    justify-content: center;
-    width: 100%;
-    font-size: 150%;
-    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.error-state .error-message {
+    max-width: 600px;
 }
 .loading_state {
     position: absolute;

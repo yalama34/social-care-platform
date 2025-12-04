@@ -1,6 +1,7 @@
 import React,{useState} from "react";
 import { useNavigate } from 'react-router-dom';
-import '../styles/auth_page.css'
+import '../styles/auth_page.css';
+import Notification from "./Notification";
 
 function VerifyCode() {
     const [code, setCode] = useState('');
@@ -8,9 +9,19 @@ function VerifyCode() {
     const backendUrl = "http://localhost:8000";
     const role = localStorage.getItem("role");
     let [errorMessage, setErrorMessage] = useState("");
+    const [notification, setNotification] = useState({ message: null, type: 'error' });
+
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+    };
+
+    const hideNotification = () => {
+        setNotification({ message: null, type: 'error' });
+    };
+
     const handleValidateCode = async () => {
         if (!code.trim()){
-            alert("Введите код");
+            showNotification("Введите код", 'warning');
         return;
     }
         const phone = localStorage.getItem('phone');
@@ -91,7 +102,14 @@ function VerifyCode() {
             
         
             </>
-
+            {notification.message && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={hideNotification}
+                    duration={5000}
+                />
+            )}
 
         </div>
     )

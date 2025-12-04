@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from "react";
 import { Link, replace, useNavigate} from 'react-router-dom';
-import '../styles/auth_page.css'
+import '../styles/auth_page.css';
+import Notification from "./Notification";
 
 function AuthApp(){
     let cur_adress = window.location.pathname;
@@ -10,7 +11,16 @@ function AuthApp(){
     const backendUrl = "http://localhost:8000";
     let [phone, setPhone] = useState("");
     let [errorMessage, setErrorMessage] = useState("");
+    const [notification, setNotification] = useState({ message: null, type: 'error' });
     const navigate = useNavigate();
+
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+    };
+
+    const hideNotification = () => {
+        setNotification({ message: null, type: 'error' });
+    };
     if (cur_adress == "/auth/login-start"){
         login_p = "Вход";
         link_to = "/auth/start-register";
@@ -24,7 +34,7 @@ function AuthApp(){
     const handleSendCode = async () => {
         setErrorMessage("");
         if (!phone.trim()) {
-            alert("Введите номер телефона");
+            showNotification("Введите номер телефона", 'warning');
             return;
         }
         const request = await fetch(backendUrl + cur_adress,{
@@ -51,7 +61,7 @@ function AuthApp(){
                 navigate("/auth/verify-phone");
             }
             else{
-                alert('Ошибка');
+                showNotification('Ошибка отправки кода', 'error');
             }
         }
     }
@@ -94,6 +104,14 @@ function AuthApp(){
                     </div>
                 </div>
             </>
+            {notification.message && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={hideNotification}
+                    duration={5000}
+                />
+            )}
         </div>
     );
 }

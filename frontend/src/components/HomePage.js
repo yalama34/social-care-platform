@@ -2,6 +2,7 @@ import { React, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/home_page.css";
 import Message from "./Message";
+import Notification from "./Notification";
 
 
 function HomePage() {
@@ -26,6 +27,7 @@ function HomePage() {
     const [submittingComplaint, setSubmittingComplaint] = useState(false);
     const [verdictResult, setVerdictResult] = useState(null);
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [notification, setNotification] = useState({ message: null, type: 'error' });
     const role = localStorage.getItem("role");
 
     const getUserIdFromToken = (token) => {
@@ -186,7 +188,37 @@ function HomePage() {
                         <div key={request.id} className="request-card">
                             <p>{serviceStatus[request.status]}</p>
                             <p><strong>{serviceType[request.service_type]}</strong></p>
-                            <p><strong>Адрес:</strong> {FormatText(request.address)}</p>
+                            
+                            {(request.service_type==="delivery_food" || request.service_type==="delivery_drugs") ?
+                                    (
+                                    <>
+                                        
+                                        <p>
+                                            <strong>Адрес: </strong>
+                                            {FormatText(request.address)}
+                                        </p>
+                                        <p>
+                                            <strong>Список товаров: </strong>
+                                            {FormatText(request.list_products)}
+                                            </p>
+                                    </>):((request.service_type==="mobility_help") ?
+                                        (
+                                        <>
+                                            <p><strong>Откуда: </strong>
+                                                {FormatText(request.address)}
+                                            </p>
+                                            
+                                            <p><strong>Куда: </strong>
+                                                {FormatText(request.destination_address)}
+                                            </p>
+                                        </>
+                                        ):(
+                                        <p><strong>Адрес: </strong>
+                                            {FormatText(request.address)}
+                                        </p>
+                                        )
+                                    )}
+
                             <p>
                                 <strong>Комментарий:{" "} </strong>
                                 {FormatText(request.comment) || "Нет комментария"}
@@ -240,20 +272,28 @@ function HomePage() {
         setMessages(data.messages || []);
     }
 
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+    };
+
+    const hideNotification = () => {
+        setNotification({ message: null, type: 'error' });
+    };
+
     const sendRating = async () => {
         if (selectedRating === 0) {
-            alert("Пожалуйста, выберите оценку");
+            showNotification("Пожалуйста, выберите оценку", 'warning');
             return;
         }
         if (!selectedRequest) {
-            alert("Ошибка: заявка не выбрана");
+            showNotification("Ошибка: заявка не выбрана", 'error');
             return;
         }
         const ratedUserId = role === "user" ?
         selectedRequest.volunteer_id :
         selectedRequest.user_id;
         if (!ratedUserId  || ratedUserId ===-1) {
-            alert("Невозможно оценить нет другого участника");
+            showNotification("Невозможно оценить: нет другого участника", 'error');
             return;
         }
         const backendUrl = "http://localhost:8001";
@@ -273,12 +313,13 @@ function HomePage() {
                 setIsRatingOpen(false);
                 setSelectedRating(0);
                 setHoveredRating(0);
+                showNotification("Оценка успешно отправлена!", 'success');
             } else {
                 const error = await response.json();
-                alert("Ошибка: " + (error.detail || "Не удалось отправить оценку"));
+                showNotification("Ошибка: " + (error.detail || "Не удалось отправить оценку"), 'error');
             }
         } catch (err) {
-            alert("Ошибка сети: " + err.message);
+            showNotification("Ошибка сети: " + err.message, 'error');
         } finally {
             setSubmittingRating(false);
         }
@@ -314,7 +355,7 @@ function HomePage() {
             : selectedRequest.user_id;
 
         if (!susUserId || susUserId === -1) {
-            alert("Невозможно отправить жалобу: нет другого участника");
+            showNotification("Невозможно отправить жалобу: нет другого участника", 'error');
             return;
         }
 
@@ -340,10 +381,10 @@ function HomePage() {
                 setComplaintText("");
             } else {
                 const error = await response.json();
-                alert("Ошибка: " + (error.detail || "Не удалось отправить жалобу"));
+                showNotification("Ошибка: " + (error.detail || "Не удалось отправить жалобу"), 'error');
             }
         } catch (err) {
-            alert("Ошибка сети: " + err.message);
+            showNotification("Ошибка сети: " + err.message, 'error');
         } finally {
             setSubmittingComplaint(false);
         }
@@ -468,10 +509,35 @@ function HomePage() {
                                 <strong>Тип услуги: </strong>
                                 {serviceType[selectedRequest.service_type]}
                             </p>
-                            <p>
-                                <strong>Адрес: </strong>
-                                {selectedRequest.address}
-                            </p>
+                            {(selectedRequest.service_type==="delivery_food" || selectedRequest.service_type==="delivery_drugs") ?
+                                    (
+                                    <>
+                                        
+                                        <p>
+                                            <strong>Адрес: </strong>
+                                            {selectedRequest.address}
+                                        </p>
+                                        <p>
+                                            <strong>Список товаров: </strong>
+                                            {selectedRequest.list_products}
+                                            </p>
+                                    </>):((selectedRequest.service_type==="mobility_help") ?
+                                        (
+                                        <>
+                                            <p><strong>Откуда: </strong>
+                                                {selectedRequest.address}
+                                            </p>
+                                            
+                                            <p><strong>Куда: </strong>
+                                                {selectedRequest.destination_address}
+                                            </p>
+                                        </>
+                                        ):(
+                                        <p><strong>Адрес: </strong>
+                                            {selectedRequest.address}
+                                        </p>
+                                        )
+                                    )}
                             <p>
                                 <strong>Комментарий: </strong>
                                 {selectedRequest.comment || "Нет комментария"}
@@ -753,6 +819,15 @@ function HomePage() {
                         </button>
                     </div>
                 </div>
+            )}
+
+            {notification.message && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={hideNotification}
+                    duration={5000}
+                />
             )}
         
         </div>

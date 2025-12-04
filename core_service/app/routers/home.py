@@ -48,6 +48,8 @@ async def user_home(session : SessionDep, role: str, authorization: str = Header
             "status": req.status,
             "volunteer_id": req.volunteer_id,
             "volunteer_name": await request_service.get_volunteer_name(req.volunteer_id),
+            "destination_address": req.destination_address,
+            "list_products": req.list_products,
         }
 
         if req.status != "completed" and req.status != "cancelled":
