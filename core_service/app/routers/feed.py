@@ -1,5 +1,5 @@
 from ..common.database import SessionDep
-from ..common.models import RequestModel, AcceptRequest
+from ..common.models import RegisterRequest, RequestModel, UserModel, AcceptRequest
 from fastapi import APIRouter, HTTPException, Header
 from datetime import timedelta, datetime
 from sqlalchemy import select
@@ -34,6 +34,8 @@ async def request_feed(session: SessionDep, authorization: str = Header(None)):
             "full_name": req.full_name,
             "service_type": req.service_type,
             "address": req.address,
+            "destination_address": req.destination_address,
+            "list_products": req.list_products,
             "comment": req.comment,
             "desired_time": req.desired_time.isoformat() if hasattr(req.desired_time, 'isoformat') else str(req.desired_time),
         }

@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import ForeignKey, String, Integer, DateTime, Boolean, Float
+from sqlalchemy import ForeignKey, String, Integer, DateTime, Boolean
 import datetime
 from sqlalchemy.sql import func
 
@@ -43,6 +43,8 @@ class RequestModel(Base):
     full_name: Mapped[str] = mapped_column(String)
     service_type: Mapped[str] = mapped_column(String)
     address: Mapped[str] = mapped_column(String)
+    destination_address: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
+    list_products: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
     comment: Mapped[str] = mapped_column(String)
     desired_time: Mapped[datetime.datetime] = mapped_column(DateTime)
     status: Mapped[str] = mapped_column(String, default="onwait")
@@ -117,6 +119,9 @@ class RegisterRequest(BaseModel):
     desired_time: str
     full_name: str
     service_type: str
+    destination_address: Optional[str] = None
+    list_products: Optional[str] = None
+
     @field_validator('desired_time')
     def validate_desired_time(cls, value):
         try:
@@ -124,6 +129,7 @@ class RegisterRequest(BaseModel):
             datetime.fromisoformat(value)
             return value
         except ValueError:
+<<<<<<< HEAD
             raise ValueError(f"Invalid datetime format. Expected ISO format like '2025-11-17T12:00', got '{value}'")
 
 class ComplaintRequest(BaseModel):

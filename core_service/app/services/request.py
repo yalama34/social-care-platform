@@ -31,6 +31,8 @@ class RequestService:
             full_name=request.full_name,
             service_type=request.service_type,
             address=request.address,
+            destination_address=request.destination_address,
+            list_products=request.list_products,
             comment=request.comment,
             desired_time=desired_time,
         )

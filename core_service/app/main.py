@@ -6,11 +6,22 @@ from .routers.feed import feed_router
 from .routers.profiles import profile_router
 from .routers.websocket import ws_router
 from .routers.chat import chat_router
+from .common.database import engine
+from .common.models import Base
+from contextlib import asynccontextmanager
 from .routers.moderation import moderation_router
 from .routers.verdict import verdict_router
 from .routers.rating import rating_router
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)  # Удаляет все таблицы (ВНИМАНИЕ: удалит данные!)
+        await conn.run_sync(Base.metadata.create_all)
+    print("✅ Таблицы пересозданы")
+    yield
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:8001"],
@@ -18,6 +29,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 app.include_router(request_router)
 app.include_router(home_router)

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import "../styles/home_page.css";
 import Message from "./Message";
 
+
 function HomePage() {
     const [activeRequests, setActiveRequests] = useState([]);
     const [historyRequests, setHistoryRequests] = useState([]);
@@ -25,6 +26,7 @@ function HomePage() {
     const [submittingComplaint, setSubmittingComplaint] = useState(false);
     const [verdictResult, setVerdictResult] = useState(null);
     const role = localStorage.getItem("role");
+
 
     const getRequests = async () => {
         const backendUrl = "http://localhost:8001";
@@ -50,7 +52,7 @@ function HomePage() {
         }
     };
 
-    const serviceType = {
+   const serviceType = {
         cleaning: "Уборка",
         rubbish: "Вынос мусора",
         delivery_food: "Доставка продуктов",
@@ -65,6 +67,7 @@ function HomePage() {
         completed: "Завершено",
         cancelled: "Отменено",
     };
+
 
     const showDetails = (request) => {
         setSelectedRequest(request);
@@ -82,6 +85,9 @@ function HomePage() {
         };
         setIsConnected(false);
     };
+
+
+
     const showRating = () => {
         setSelectedRating(0);
         setHoveredRating(0);
@@ -98,6 +104,11 @@ function HomePage() {
             hour: "2-digit",
             minute: "2-digit",
         });
+    };
+    const FormatText = (text, maxLength = 20) => {
+        if (!text) return text;
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + "...";
     };
 
     const deleteRequest = async (requestId) => {
@@ -127,6 +138,7 @@ function HomePage() {
         setIsDetailedOpen(false);
         await getRequests();
     }
+
 
     const cancelRequest = async (requestId) => {
         const backendUrl = "http://localhost:8001";
@@ -179,6 +191,9 @@ function HomePage() {
             </div>
         );
     };
+
+
+
     const renderLink = (role) => {
         if (role === "user") {
             return (
@@ -202,7 +217,6 @@ function HomePage() {
             setMessages([]);
             return;
         }
-
         const response = await fetch(backendUrl + `/chat/history/${requestId}`, {
             method: "GET",
             headers: {
@@ -221,7 +235,7 @@ function HomePage() {
 
         const backendUrl = "http://localhost:8001";
         const access_token = localStorage.getItem("access_token");
-        
+
         setSubmittingRating(true);
         try {
             const response = await fetch(`${backendUrl}/set-rating?add_rating=${selectedRating}`, {
@@ -264,6 +278,7 @@ function HomePage() {
         ws.send(message.trim());
         setMessage('');
     }
+
 
     const sendComplaint = async () => {
         if (!complaintText.trim() || !selectedRequest) return;
@@ -334,7 +349,7 @@ const closeVerdict = async () => {
         getRequests();
     }, []);
 
-    useEffect(() => {
+useEffect(() => {
         if (!selectedRequest) return;
         const access_token = localStorage.getItem("access_token");
         const socket = new WebSocket(`ws://localhost:8001/ws/${role}/${selectedRequest.id}?access_token=${access_token}`);
@@ -365,10 +380,27 @@ const closeVerdict = async () => {
         };
     }, [role, isDetailedOpen, selectedRequest]);
 
+        socket.onerror = () => {
+            console.error("WebSocket error");
+            setIsConnected(false);
+        };
+        socket.onclose = () => setIsConnected(false);
+
+        return () => {
+            socket.close();
+            SetWs(null);
+            setIsConnected(false);
+        };
+    }, [role, isDetailedOpen, selectedRequest]);
+
+
     return (
         <div className="home-page-container">
             <div className="div-header">
                 <p className="p-header">Главная</p>
+                <Link to={"/profile"} className="link-to-profile">
+                    Профиль
+                </Link>
             </div>
 
             <div className="main-content">
@@ -397,11 +429,12 @@ const closeVerdict = async () => {
                 <div className="button-container">{renderLink(role)}</div>
             </div>
 
-            <div className="footer">
+<div className="footer">
                 <p className="footer-text">Связаться с нами</p>
             </div>
 
-            {isDetailedOpen && selectedRequest && (
+
+       {isDetailedOpen && selectedRequest && (
                 <div className="request-detailed-overlay" onClick={closeDetailed}>
                     <div
                         className="request-detailed-layout"
@@ -466,22 +499,14 @@ const closeVerdict = async () => {
                                     </div>
                                 )
                             )}
-
                         </div>
+
                         <div className="chat-panel">
                             <div className="chat-header">
                                 <p className="chat-title">Чат заявки</p>
-                                <div style={{display: "flex", alignItems: "center", gap: "10px"}}>
-                                    <span className={`chat-status ${isConnected ? "online" : "offline"}`}>
-                                        {isConnected ? "в сети" : "нет подключения"}
-                                    </span>
-                                    <button
-                                        className="complaint-button"
-                                        onClick={() => setShowComplaintModal(true)}
-                                    >
-                                        Пожаловаться
-                                    </button>
-                                </div>
+                                <span className={`chat-status ${isConnected ? "online" : "offline"}`}>
+                                    {isConnected ? "в сети" : "нет подключения"}
+                                </span>
                             </div>
                             <div className="chat-window">
                                 {messages.length === 0 ? (
@@ -508,12 +533,19 @@ const closeVerdict = async () => {
                                     Отправить
                                 </button>
                             </div>
+
                         </div>
                     </div>
                 </div>
             )}
 
-            {showComplaintModal && (
+
+
+        </div>
+    );
+}
+
+{showComplaintModal && (
                 <div className="request-detailed-overlay" onClick={() => setShowComplaintModal(false)}>
                     <div
                         className="complaint-modal"
@@ -588,7 +620,7 @@ const closeVerdict = async () => {
                         </button>
                         <h2 className="rating-title">Оцените заявку</h2>
                         <p className="rating-subtitle">Выберите оценку от 1 до 5</p>
-                        
+
                         <div className="rating-stars-container">
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <button
@@ -631,6 +663,8 @@ const closeVerdict = async () => {
                     </div>
                 </div>
             )}
+
+
             {verdictResult && verdictResult.punishments && (
                 <div className="request-detailed-overlay" onClick={() => setVerdictResult(null)}>
                     <div
@@ -702,5 +736,4 @@ const closeVerdict = async () => {
         </div>
     );
 }
-
 export default HomePage;

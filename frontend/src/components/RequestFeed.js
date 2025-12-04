@@ -152,7 +152,7 @@ function RequestFeed() {
             overflow: "hidden",
         }}>
             <div className="header_div">
-                <p className="header_p">
+                <p className="header-p">
                     Лента заявок
                 </p>
             </div>
@@ -165,7 +165,7 @@ function RequestFeed() {
                 <div className="request-list">
                     {requests.map((app) => (
                         <div key={app.id} className="container-out">
-                            <div className="container-in">
+
                                 <div className="couple">
                                     <p className="p1">Имя заказчика</p>
                                     <p className="p2">{app.full_name}</p>
@@ -174,15 +174,38 @@ function RequestFeed() {
                                     <p className="p1">Тип услуги</p>
                                     <p className="p2">{serviceType[app.service_type]}</p>
                                 </div>
-
-                                <div className="couple">
-                                    <p className="p1">Адрес</p>
-                                    <p className="p2">{app.address}</p>
-                                </div>
                                 <div className="couple">
                                     <p className="p1">Желаемое время выполнения</p>
                                     <p className="p2">{formatDateTime(app.desired_time)}</p>
                                 </div>
+
+                                {(serviceType[app.serviceType]==="delivery_food" || serviceType[app.serviceType]==="delivery_drugs") ?
+                                (<>
+                                    <div className="couple">
+                                    <p className="p1">Адрес</p>
+                                    <p className="p2">{app.address}</p>
+                                </div>
+                                    <div className="couple">
+                                    <p className="p1">Список товаров</p>
+                                    <p className="p2">{app.listProducts}</p>
+                                    </div>
+                                    </>):(serviceType[app.serviceType]==="mobility_help" ?
+                                        (<>
+                                    <div className="couple">
+                                    <p className="p1">Откуда</p>
+                                    <p className="p2">{app.address}</p>
+                                </div>
+                                    <div className="couple">
+                                    <p className="p1">Куда</p>
+                                    <p className="p2">{app.destinationAdress}</p>
+                                    </div>
+                                    </>):(
+                                    <div className="couple">
+                                    <p className="p1">Адрес</p>
+                                    <p className="p2">{app.address}</p>
+                                </div>
+                                    )
+                                    )}
                                 <div className="couple">
                                     <p className="p1">Комментарий</p>
                                     <p className="p2">{app.comment || "Комментарий отсутствует"}</p>
@@ -198,7 +221,7 @@ function RequestFeed() {
                     ))}
                 </div>
             )}
-            <button 
+            <button
                 className="back-button"
                 onClick={() => navigate(-1)}
                 title="Вернуться назад"
