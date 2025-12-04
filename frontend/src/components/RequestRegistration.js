@@ -157,13 +157,15 @@ function RequestRegistration() {
                             </div>
 
                             <p className="input_p">Желаемое время выполнения</p>
-                        <input
-                            type="datetime-local"
-                            className="datetime-input-custom"
-                            name="desiredTime"
-                            value={formData.desiredTime}
-                            onChange={handleInputChange}
-                        />
+                            <input
+                                type="datetime-local"
+                                className="datetime-input-custom"
+                                name="desiredTime"
+                                value={formData.desiredTime}
+                                onChange={handleInputChange}
+                                min="1900-01-01T00:00"
+                                max="9999-12-31T23:59"
+                            />
                         </div>
                     </div>
 

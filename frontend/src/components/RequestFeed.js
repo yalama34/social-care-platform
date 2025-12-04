@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import '../styles/requestfeed.css';
 
@@ -6,6 +6,8 @@ function RequestFeed() {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [filterTypes, setFilterTypes] = useState([]);
+    const [sortOrder, setSortOrder] = useState("newest");
 
     const backendUrl = "http://localhost:8001";
     const navigate = useNavigate();
@@ -93,6 +95,29 @@ function RequestFeed() {
         });
     };
 
+    const filteredAndSortedRequests = useMemo(() => {
+        let filtered = requests;
+
+        // Фильтрация по выбранным типам
+        if (filterTypes.length > 0) {
+            filtered = filtered.filter(req => filterTypes.includes(req.service_type));
+        }
+        // Если ничего не выбрано - показываем все заявки
+
+        // Сортировка по дате
+        filtered = [...filtered].sort((a, b) => {
+            const dateA = new Date(a.desired_time);
+            const dateB = new Date(b.desired_time);
+            if (sortOrder === "newest") {
+                return dateB - dateA; 
+            } else {
+                return dateA - dateB; 
+            }
+        });
+
+        return filtered;
+    }, [requests, filterTypes, sortOrder]);
+
     if (loading) {
         return (
             <div style={{
@@ -158,13 +183,65 @@ function RequestFeed() {
                 </p>
             </div>
 
+            {requests.length > 0 && (
+                <div className="filters-container">
+                    <div className="filter-group">
+                        <div className="filter-header">
+                            <label className="filter-label">Тип услуги:</label>
+                            {filterTypes.length > 0 && (
+                                <button
+                                    className="clear-filters-btn"
+                                    onClick={() => setFilterTypes([])}
+                                >
+                                    Очистить
+                                </button>
+                            )}
+                        </div>
+                        <div className="checkbox-group">
+                            {Object.entries(serviceType).map(([key, label]) => (
+                                <label key={key} className="checkbox-label">
+                                    <input
+                                        type="checkbox"
+                                        checked={filterTypes.includes(key)}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setFilterTypes([...filterTypes, key]);
+                                            } else {
+                                                setFilterTypes(filterTypes.filter(t => t !== key));
+                                            }
+                                        }}
+                                        className="checkbox-input"
+                                    />
+                                    <span>{label}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="filter-group">
+                        <label className="filter-label">Сортировка:</label>
+                        <select 
+                            className="filter-select"
+                            value={sortOrder}
+                            onChange={(e) => setSortOrder(e.target.value)}
+                        >
+                            <option value="newest">Сначала новые</option>
+                            <option value="oldest">Сначала старые</option>
+                        </select>
+                    </div>
+                </div>
+            )}
+
             {requests.length === 0 ? (
                 <div className="empty_state">
                     <p>Заявок пока нет</p>
                 </div>
+                ) : filteredAndSortedRequests.length === 0 ? (
+                    <div className="empty_state">
+                        <p>Нет заявок по выбранному фильтру</p>
+                    </div>
                 ) : (
                     <div className="request-list">
-                        {requests.map((app) => (
+                        {filteredAndSortedRequests.map((app) => (
                             <div key={app.id} className="container-out">
 
                                     <div className="couple">
