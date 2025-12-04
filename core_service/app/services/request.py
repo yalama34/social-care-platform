@@ -31,6 +31,8 @@ class RequestService:
             full_name=request.full_name,
             service_type=request.service_type,
             address=request.address,
+            destination_address=request.destination_address,
+            list_products=request.list_products,
             comment=request.comment,
             desired_time=desired_time,
         )
@@ -70,7 +72,7 @@ class RequestService:
         self.session.add(request)
         await self.session.commit()
         self.session.refresh(request)
-    
+
     async def delete_all_requests_by_user_id(self, user_id):
         result = await self.session.execute(
             select(RequestModel).where(RequestModel.user_id == user_id)
@@ -78,7 +80,7 @@ class RequestService:
         requests = result.scalars().all()
         if not requests:
             return []
-        
+
         deleted_request_ids = []
         for request in requests:
             request.status = "deleted"
@@ -86,10 +88,10 @@ class RequestService:
                 request.volunteer_id = -1
             self.session.add(request)
             deleted_request_ids.append(request.id)
-        
+
         await self.session.commit()
         return deleted_request_ids
-    
+
     async def return_volunteer_requests_to_feed(self, volunteer_id):
         """Возвращает все заявки волонтера в ленту (статус onwait, очищает volunteer_id)"""
         result = await self.session.execute(
@@ -104,13 +106,13 @@ class RequestService:
         requests = result.scalars().all()
         if not requests:
             return []
-        
+
         returned_request_ids = []
         for request in requests:
             request.status = "onwait"
             request.volunteer_id = -1
             self.session.add(request)
             returned_request_ids.append(request.id)
-        
+
         await self.session.commit()
         return returned_request_ids

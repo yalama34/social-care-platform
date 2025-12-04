@@ -14,15 +14,30 @@
 
 .div-header {
     background-color: #FFE851;
-    padding: 20px;
+    padding: 24px 32px;
     text-align: center;
     width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .p-header {
     margin: 0;
     font-size: 24px;
     font-weight: 800;
+    color: #000;
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.link-to-profile {
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: underline;
     color: #000;
 }
 

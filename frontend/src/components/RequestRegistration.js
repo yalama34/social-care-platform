@@ -8,9 +8,21 @@ function RequestRegistration() {
         fullName: username,
         serviceType: '',
         address: '',
+        destinationAddress:'',
+        listProducts: '',
         comment: '',
         desiredTime: ''
     });
+    let address_text="Адрес проживания";
+    let additional_field = "Куда доставить";
+    if (formData.serviceType==="mobility_help")
+        address_text="Откуда доставить";
+    if (formData.serviceType === "delivery_food")
+        additional_field = "Список продуктов";
+    if (formData.serviceType === "delivery_drugs")
+        additional_field = "Список лекарств";
+
+    const backendUrl = "http://localhost:8001";
 
     const backendUrl = "http://localhost:8001";
     const navigate = useNavigate();
@@ -25,9 +37,35 @@ function RequestRegistration() {
     };
     const handleSubmit = async () => {
         if (!formData.fullName.trim() || !formData.serviceType || !formData.address.trim() || !formData.desiredTime) {
+            //сделать выплывающее информирующее окно
             alert("Заполните обязательные поля: ФИО, тип услуги, адрес и время");
             return;
         }
+        if (((formData.serviceType === "delivery_food" || formData.serviceType === "delivery_drugs") && !formData.listProducts.trim()) || (formData.serviceType === "mobility_help" && !formData.destinationAddress.trim())){
+            //сделать выплывающее информирующее окно
+            alert(`Заполните ${additional_field}`);
+            return;
+        }
+
+        const requestBody = {
+            full_name: formData.fullName.trim(),
+            service_type: formData.serviceType,
+            address: formData.address.trim(),
+            comment: formData.comment.trim(),
+            desired_time: formData.desiredTime
+        };
+        if (formData.serviceType === 'mobility_help') {
+            requestBody.destination_address = formData.destinationAddress.trim();
+        }
+        if (formData.serviceType === "delivery_food" || formData.serviceType === "delivery_drugs"){
+            requestBody.list_products = formData.listProducts.trim();
+        }
+        const response = await fetch(backendUrl + '/request/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
         const response = await fetch(backendUrl + '/request/register', {
                 method: 'POST',
                 headers: {
@@ -46,7 +84,7 @@ function RequestRegistration() {
         const data = await response.json();
         if (data.success) {
                 navigate(`/home/${role}`);
-            } 
+            }
         else {
                 alert('Не удалось создать заявку');
             }
@@ -75,7 +113,33 @@ function RequestRegistration() {
                                 name="fullName"
                                 value={formData.fullName}
                                 onChange={handleInputChange}
+                                maxLength={30}
                             />
+                            <p className="input_p">{address_text}</p>
+                            <input
+                                type="text"
+                                className="input_field"
+                                placeholder="Введите адрес"
+                                name="address"
+                                value={formData.address}
+                                onChange={handleInputChange}
+                            />
+                            {
+                                (formData.serviceType === "mobility_help" || formData.serviceType ==="delivery_drugs" || formData.serviceType === "delivery_food")?(
+                                <>
+                                <p className="input_p">{additional_field}</p>
+                                <input
+                                    type="text"
+                                    className="input_field"
+                                    placeholder={`Введите ${additional_field}`}
+                                    name={formData.serviceType === "mobility_help" ? "destinationAddress" : "listProducts"}
+                                    value={formData.serviceType === "mobility_help"?(formData.destinationAddress):(formData.listProducts)}
+                                    onChange={handleInputChange}
+                                />
+                                </>):null
+                            }
+                        </div>
+                        <div className="container_in">
                             <p className="input_p">Тип услуги</p>
                             <div className="custom-select">
                                 <select 
@@ -94,40 +158,36 @@ function RequestRegistration() {
                                     <option value="other">Другая услуга (указать в коментарии)</option>
                                 </select>
                             </div>
+
+                            <p className="input_p">Желаемое время выполнения</p>
+                        <input
+                            type="datetime-local"
+                            className="datetime-input-custom"
+                            name="desiredTime"
+                            value={formData.desiredTime}
+                            onChange={handleInputChange}
+                        />
                         </div>
-                        <div className="container_in">
-                            <p className="input_p">Адрес проживания</p>
-                            <input 
-                                type="text" 
-                                className="input_field" 
-                                placeholder="Введите адрес"
-                                name="address"
-                                value={formData.address}
-                                onChange={handleInputChange}
-                            />
-                            <p className="input_p">Комментарий</p>
-                            <input 
-                                type="text" 
-                                className="input_field" 
+                    </div>
+
+                    <p className="input_p">Комментарий</p>
+                            <textarea
+                                className="input_comm"
                                 placeholder="Введите комментарий"
                                 name="comment"
                                 value={formData.comment}
                                 onChange={handleInputChange}
+                                maxLength={300}
+                                rows={4}
                             />
-                        </div>
-                    </div>
-                    <p className="input_p">Желаемое время выполнения</p>
-                    <input 
-                        type="datetime-local" 
-                        className="datetime-input-custom"
-                        name="desiredTime"
-                        value={formData.desiredTime}
-                        onChange={handleInputChange}
-                    />
+                            <p style={{ fontSize: '12px', marginTop: '4px', textAlign: 'center'}}>
+                                {formData.comment.length || 0}/300
+                            </p>
+
                     <button className="button" onClick={handleSubmit}>
                         Отправить
                     </button>
-                    <button 
+                    <button
                         className="back-button"
                         onClick={() => navigate(-1)}
                         title="Вернуться назад"

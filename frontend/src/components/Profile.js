@@ -15,13 +15,14 @@ function Profile() {
     const [ratingLoading, setRatingLoading] = useState(false);
     const backendUrl = "http://localhost:8001";
     const access_token = localStorage.getItem("access_token");
+    const role = localStorage.getItem("role");
 
     const getProfileData = async () => {
         setLoading(true);
         const request = await fetch(backendUrl + `/profile/${user_id}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${access_token}` 
+                'Authorization': `Bearer ${access_token}`
             },
         })
         const data = await request.json();
@@ -36,7 +37,7 @@ function Profile() {
     }
     const getRating = async () => {
         if (!user_id || !access_token) return;
-        
+
         setRatingLoading(true);
         try {
             const response = await fetch(`${backendUrl}/rating/${user_id}`, {
@@ -45,7 +46,7 @@ function Profile() {
                     'Authorization': `Bearer ${access_token}`,
                 },
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 setRating(data);
@@ -69,6 +70,45 @@ function Profile() {
         if (profileData && profileData.role === 'volunteer' && ableEditing) {
             if (isEditing) {
                 return (
+                    <div className="profile-section">
+                        <p className="profile-label">О себе</p>
+                        <textarea
+                            className="profile-textarea"
+                            value={about || ''}
+                            onChange={(e) => setAbout(e.target.value)}
+                            rows={8}
+                            maxLength={400}
+                        />
+                        <p style={{ fontSize: '12px', marginTop: '4px', textAlign: 'center'}}>
+                                {about.length || 0}/400
+                        </p>
+                        <div className="profile-buttons">
+                            <button
+                                className="profile-btn primary"
+                                onClick={async () => {
+                                    setIsEditing(false);
+                                    await fetch(backendUrl + '/profile/about', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Authorization': `Bearer ${access_token}`,
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify({ about: about.trim() })
+                                    });
+                                }}
+                            >
+                                Сохранить
+                            </button>
+                            <button
+                                className="profile-btn secondary"
+                                onClick={() => {
+                                    setIsEditing(false);
+                                    setAbout(profileData.about || '');
+                                }}
+                            >
+                                Отмена
+                            </button>
+                        </div>
                     <div>
                         <p>О себе:</p>
                         <input value={about || ''}
@@ -82,7 +122,7 @@ function Profile() {
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({about: about.trim()})
-                            });   
+                            });
 
                         }}>Подтвердить</button>
                         <button onClick={() => {
@@ -94,11 +134,19 @@ function Profile() {
             } else{
                 return (
                     <div>
-                        <p>О себе:</p>
-                        <p>{about || 'Информация отсутствует'}</p>
-                        <button onClick={() => setIsEditing(true)}>Редактировать</button>
+                    <div className="profile-section">
+                        <p className="profile-label">О себе</p>
+                        <p className="profile-text">
+                            {about || "Информация отсутствует"}
+                        </p>
+                        <button
+                            className="profile-btn primary"
+                            onClick={() => setIsEditing(true)}
+                        >
+                            Редактировать
+                        </button>
                     </div>
-                )
+                );
             }
         }
         return null;
@@ -114,16 +162,17 @@ function Profile() {
                 </div>
             );
         }
+    };
 
         const normalizedRating = Math.min(5, Math.max(0, ratingValue));
-        
+
         return (
             <div className="rating-stars-display">
                 {[1, 2, 3, 4, 5].map((star) => {
                     const isFilled = star <= Math.round(normalizedRating);
                     return (
-                        <span 
-                            key={star} 
+                        <span
+                            key={star}
                             className={isFilled ? "star-full" : "star-empty"}
                         >
                             ★
@@ -133,7 +182,6 @@ function Profile() {
             </div>
         );
     };
-
     return (
         <div style={{
             backgroundImage: "none",
@@ -143,11 +191,35 @@ function Profile() {
             backgroundRepeat: "no-repeat",
             margin: 0,
             padding: 0,
-            minHeight: "100vh", 
+            minHeight: "100vh",
         }}>
             <p>Профиль</p>
             <p>{username}</p>
-            
+            <div className="profile-page">
+            <div className="profile-header">
+                <p className="profile-title">Профиль</p>
+                <Link to={`/home/${role}`} className="profile-back">
+                    На главную
+                </Link>
+            </div>
+
+            <div className="profile-content">
+                <div className="profile-card">
+                    <p className="profile-name">{username}</p>
+                    {profileData && (
+                        <p className="profile-role">
+                            Роль: {profileData.role === "volunteer" ? "Волонтёр" : "Пользователь"}
+                        </p>
+                    )}
+
+                    {loading ? (
+                        <p className="profile-loading">Загрузка...</p>
+                    ) : (
+                        renderAbout()
+                    )}
+                </div>
+            </div>
+
             {ratingLoading ? (
                 <p>Загрузка рейтинга...</p>
             ) : (
@@ -168,7 +240,7 @@ function Profile() {
 
             {loading ? <p>Загрузка...</p> : renderAbout()}
 
-            <button 
+            <button
                 className="back-button"
                 onClick={() => navigate(-1)}
                 title="Вернуться назад"
@@ -178,6 +250,7 @@ function Profile() {
         </div>
 
     );
-    
+
+
 }
 export default Profile;
