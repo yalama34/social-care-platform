@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -130,3 +130,9 @@ class ComplaintRequest(BaseModel):
     complaint_text: str
     sus_user_id: int
     request_id: Optional[int] = None
+
+
+class PunishmentRequest(BaseModel):
+    punishments: List[Dict[str, Any]]
+    confidence: int
+    reasoning: str
