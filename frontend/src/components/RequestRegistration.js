@@ -1,6 +1,7 @@
 import React,{useState} from "react";
 import {useNavigate} from "react-router-dom";
 import '../styles/request_registration.css';
+import Notification from "./Notification";
 
 function RequestRegistration() {
     const username = localStorage.getItem("full_name") || '';
@@ -26,6 +27,16 @@ function RequestRegistration() {
     const navigate = useNavigate();
     const role = localStorage.getItem("role");
     const access_token = localStorage.getItem("access_token");
+    const [notification, setNotification] = useState({ message: null, type: 'error' });
+
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+    };
+
+    const hideNotification = () => {
+        setNotification({ message: null, type: 'error' });
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -35,13 +46,11 @@ function RequestRegistration() {
     };
     const handleSubmit = async () => {
         if (!formData.fullName.trim() || !formData.serviceType || !formData.address.trim() || !formData.desiredTime) {
-            //сделать выплывающее информирующее окно
-            alert("Заполните обязательные поля: ФИО, тип услуги, адрес и время");
+            showNotification("Заполните обязательные поля: ФИО, тип услуги, адрес и время", 'warning');
             return;
         }
         if (((formData.serviceType === "delivery_food" || formData.serviceType === "delivery_drugs") && !formData.listProducts.trim()) || (formData.serviceType === "mobility_help" && !formData.destinationAddress.trim())){
-            //сделать выплывающее информирующее окно
-            alert(`Заполните ${additional_field}`);
+            showNotification(`Заполните ${additional_field}`, 'warning');
             return;
         }
 
@@ -68,10 +77,13 @@ function RequestRegistration() {
             });
         const data = await response.json();
         if (data.success) {
-                navigate(`/home/${role}`);
+                showNotification("Заявка успешно создана!", 'success');
+                setTimeout(() => {
+                    navigate(`/home/${role}`);
+                }, 1000);
             }
         else {
-                alert('Не удалось создать заявку');
+                showNotification('Не удалось создать заявку', 'error');
             }
     }
     return(
@@ -145,13 +157,15 @@ function RequestRegistration() {
                             </div>
 
                             <p className="input_p">Желаемое время выполнения</p>
-                        <input
-                            type="datetime-local"
-                            className="datetime-input-custom"
-                            name="desiredTime"
-                            value={formData.desiredTime}
-                            onChange={handleInputChange}
-                        />
+                            <input
+                                type="datetime-local"
+                                className="datetime-input-custom"
+                                name="desiredTime"
+                                value={formData.desiredTime}
+                                onChange={handleInputChange}
+                                min="1900-01-01T00:00"
+                                max="9999-12-31T23:59"
+                            />
                         </div>
                     </div>
 
@@ -180,6 +194,14 @@ function RequestRegistration() {
                         ← Назад
                     </button>
                 </>
+            {notification.message && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={hideNotification}
+                    duration={5000}
+                />
+            )}
         </div>
     )
 }

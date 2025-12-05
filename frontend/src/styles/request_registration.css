@@ -63,6 +63,7 @@
     text-align: center;
     margin-left: 50%;
     margin-top: 2%;
+    margin-bottom: 2%;
     transform: translate(-50%,0%);
 }
 .custom-select {

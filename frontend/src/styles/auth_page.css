@@ -1,22 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
+@import './error.css';
 
 .auth_block{
     background-color: #FFE851;
     width: 35%;
-    height: 50%;
     border-radius: 55px;
     position: absolute;
     text-align: center;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-
+    padding: 30px 20px;
+    box-sizing: border-box;
 }
 .login_p{
     font-family: 'Jost';
     font-size: 200%;
     font-weight: 800;
     text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+    margin-top: -2%;
 }
 .phone_p{
 
@@ -44,6 +46,20 @@
     gap: 15px;
     margin-top: -2%;
 }
+
+.auth_block .error_message {
+    padding: 10px 14px;
+    margin: 0 auto;
+    width: 70%;
+    font-size: 13px;
+    max-width: none;
+    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.15);
+    line-height: 1.4;
+}
+
+.auth_block .error_message:empty {
+    display: none;
+}
 .button_code {
     display: inline-block;
     padding: 2% 2%;
@@ -70,12 +86,3 @@
     color: #3B3B3B;
 }
 
-.error_message {
-    color: #ff4444;
-    font-size: 14px;
-    margin: 5px 0;
-    text-align: center;
-    font-weight: 500;
-    border-radius: 8px;
-    min-height: 20px;
-}

@@ -2,6 +2,8 @@ import { React, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/home_page.css";
 import Message from "./Message";
+import Notification from "./Notification";
+
 
 function HomePage() {
     const [activeRequests, setActiveRequests] = useState([]);
@@ -24,11 +26,28 @@ function HomePage() {
     const [complaintType, setComplaintType] = useState("chat");
     const [submittingComplaint, setSubmittingComplaint] = useState(false);
     const [verdictResult, setVerdictResult] = useState(null);
+    const [currentUserId, setCurrentUserId] = useState(null);
+    const [notification, setNotification] = useState({ message: null, type: 'error' });
     const role = localStorage.getItem("role");
+
+    const getUserIdFromToken = (token) => {
+        if (!token) return null;
+        try {
+            const payload = token.split('.')[1];
+            const decoded = JSON.parse(atob(payload));
+            return decoded.user_id || null;
+        } catch (err) {
+            return null;
+        }
+    };
 
     const getRequests = async () => {
         const backendUrl = "http://localhost:8001";
         const access_token = localStorage.getItem("access_token");
+        const userId = getUserIdFromToken(access_token);
+        if (userId) {
+                setCurrentUserId(userId);
+        }        
         setLoading(true);
         try {
             const request = await fetch(backendUrl + `/home/${role}`, {
@@ -49,6 +68,9 @@ function HomePage() {
             return;
         }
     };
+
+    
+
 
     const serviceType = {
         cleaning: "Уборка",
@@ -82,6 +104,7 @@ function HomePage() {
         };
         setIsConnected(false);
     };
+
     const showRating = () => {
         setSelectedRating(0);
         setHoveredRating(0);
@@ -98,6 +121,11 @@ function HomePage() {
             hour: "2-digit",
             minute: "2-digit",
         });
+    };
+    const FormatText = (text, maxLength = 20) => {
+        if (!text) return text;
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + "...";
     };
 
     const deleteRequest = async (requestId) => {
@@ -156,31 +184,60 @@ function HomePage() {
             <div className="requests-grid">
                 {list.map((request) => {
                     const timeString = formatDateTime(request.desired_time);
-                    if (!request.status !== "deleted"){ 
-                        return (
-                            <div key={request.id} className="request-card">
-                                <p>{serviceStatus[request.status]}</p>
-                                <p>{serviceType[request.service_type]}</p>
-                                <p>Адрес: {request.address}</p>
-                                <p>
-                                    Комментарий{" "}
-                                    {request.comment || "Нет комментария"}
-                                </p>
-                                <p>Желаемое время: {timeString}</p>
-                                <button
-                                    className="request-details-button"
-                                    onClick={() => showDetails(request)}
-                                    type="button"
-                                >
-                                    Подробнее
-                                </button>
-                            </div>
-                        );
-                    }
+                    return (
+                        <div key={request.id} className="request-card">
+                            <p>{serviceStatus[request.status]}</p>
+                            <p><strong>{serviceType[request.service_type]}</strong></p>
+                            
+                            {(request.service_type==="delivery_food" || request.service_type==="delivery_drugs") ?
+                                    (
+                                    <>
+                                        
+                                        <p>
+                                            <strong>Адрес: </strong>
+                                            {FormatText(request.address)}
+                                        </p>
+                                        <p>
+                                            <strong>Список товаров: </strong>
+                                            {FormatText(request.list_products)}
+                                            </p>
+                                    </>):((request.service_type==="mobility_help") ?
+                                        (
+                                        <>
+                                            <p><strong>Откуда: </strong>
+                                                {FormatText(request.address)}
+                                            </p>
+                                            
+                                            <p><strong>Куда: </strong>
+                                                {FormatText(request.destination_address)}
+                                            </p>
+                                        </>
+                                        ):(
+                                        <p><strong>Адрес: </strong>
+                                            {FormatText(request.address)}
+                                        </p>
+                                        )
+                                    )}
+
+                            <p>
+                                <strong>Комментарий:{" "} </strong>
+                                {FormatText(request.comment) || "Нет комментария"}
+                            </p>
+                            <p><strong>Желаемое время:</strong> {timeString}</p>
+                            <button
+                                className="request-details-button"
+                                onClick={() => showDetails(request)}
+                                type="button"
+                            >
+                                Подробнее
+                            </button>
+                        </div>
+                    );
                 })}
             </div>
         );
     };
+
     const renderLink = (role) => {
         if (role === "user") {
             return (
@@ -204,7 +261,6 @@ function HomePage() {
             setMessages([]);
             return;
         }
-
         const response = await fetch(backendUrl + `/chat/history/${requestId}`, {
             method: "GET",
             headers: {
@@ -215,33 +271,37 @@ function HomePage() {
         const data = await response.json();
         setMessages(data.messages || []);
     }
+
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+    };
+
+    const hideNotification = () => {
+        setNotification({ message: null, type: 'error' });
+    };
+
     const sendRating = async () => {
         if (selectedRating === 0) {
-            alert("Пожалуйста, выберите оценку");
+            showNotification("Пожалуйста, выберите оценку", 'warning');
             return;
         }
-
         if (!selectedRequest) {
-            alert("Ошибка: заявка не выбрана");
+            showNotification("Ошибка: заявка не выбрана", 'error');
             return;
         }
-
-        // Определяем, кого оценивать
-        const ratedUserId = role === "user" 
-            ? selectedRequest.volunteer_id  // Пользователь оценивает волонтера
-            : selectedRequest.user_id;       // Волонтер оценивает пользователя
-
-        if (!ratedUserId || ratedUserId === -1) {
-            alert("Невозможно оценить: нет другого участника заявки");
+        const ratedUserId = role === "user" ?
+        selectedRequest.volunteer_id :
+        selectedRequest.user_id;
+        if (!ratedUserId  || ratedUserId ===-1) {
+            showNotification("Невозможно оценить: нет другого участника", 'error');
             return;
         }
-
         const backendUrl = "http://localhost:8001";
         const access_token = localStorage.getItem("access_token");
-        
+
         setSubmittingRating(true);
         try {
-            const response = await fetch(`${backendUrl}/set-rating?add_rating=${selectedRating}&user_id=${ratedUserId}`, {
+            const response = await fetch(`${backendUrl}/set-rating?add_rating=${selectedRating}&rated_user_id=${ratedUserId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -253,13 +313,13 @@ function HomePage() {
                 setIsRatingOpen(false);
                 setSelectedRating(0);
                 setHoveredRating(0);
-                await getRequests(); // Обновляем список заявок
+                showNotification("Оценка успешно отправлена!", 'success');
             } else {
                 const error = await response.json();
-                alert("Ошибка: " + (error.detail || "Не удалось отправить оценку"));
+                showNotification("Ошибка: " + (error.detail || "Не удалось отправить оценку"), 'error');
             }
         } catch (err) {
-            alert("Ошибка сети: " + err.message);
+            showNotification("Ошибка сети: " + err.message, 'error');
         } finally {
             setSubmittingRating(false);
         }
@@ -275,6 +335,7 @@ function HomePage() {
         };
         return labels[rating] || "";
     }
+
     const sendMessage = () => {
         if (!ws || ws.readyState !== WebSocket.OPEN || !message.trim()) {
             return;
@@ -282,6 +343,7 @@ function HomePage() {
         ws.send(message.trim());
         setMessage('');
     }
+
 
     const sendComplaint = async () => {
         if (!complaintText.trim() || !selectedRequest) return;
@@ -293,7 +355,7 @@ function HomePage() {
             : selectedRequest.user_id;
 
         if (!susUserId || susUserId === -1) {
-            alert("Невозможно отправить жалобу: нет другого участника");
+            showNotification("Невозможно отправить жалобу: нет другого участника", 'error');
             return;
         }
 
@@ -319,99 +381,84 @@ function HomePage() {
                 setComplaintText("");
             } else {
                 const error = await response.json();
-                alert("Ошибка: " + (error.detail || "Не удалось отправить жалобу"));
+                showNotification("Ошибка: " + (error.detail || "Не удалось отправить жалобу"), 'error');
             }
         } catch (err) {
-            alert("Ошибка сети: " + err.message);
+            showNotification("Ошибка сети: " + err.message, 'error');
         } finally {
             setSubmittingComplaint(false);
         }
     }
 
-const closeVerdict = async () => {
-    if (verdictResult.confidence >= 90) {
-        const backendUrl = "http://localhost:8001";
-        const access_token = localStorage.getItem("access_token");
+    const closeVerdict = async () => {
+        if (verdictResult.confidence >= 90) {
+            const backendUrl = "http://localhost:8001";
+            const access_token = localStorage.getItem("access_token");
 
-        for (const punishment of verdictResult.punishments) {
-            if (punishment.verdict !== "innocent") {
-                await fetch(backendUrl + `/verdict/${punishment.verdict}/${punishment.user_id}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${access_token}`,
-                    }
-                });
-            }
-            if (punishment.verdict === "ban"){
-                if (punishment.role === "user" && (complaintType === "chat" || complaintType === "request")){
-                    await fetch(backendUrl + `/home/delete/${punishment.user_id}?by_id=True`, {
+            for (const punishment of verdictResult.punishments) {
+                if (punishment.verdict !== "innocent") {
+                    await fetch(backendUrl + `/verdict/${punishment.verdict}/${punishment.user_id}`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
                             Authorization: `Bearer ${access_token}`,
                         }
                     });
-                }
-                if (punishment.role === "volunteer" && (complaintType === "chat" || complaintType === "request")){
-                    const response = await fetch(backendUrl + `/home/cancel/${punishment.user_id}?by_volunteer_id=true`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${access_token}`,
-                        }
-                    });
-                    if (!response.ok) {
-                        console.error("Ошибка при освобождении заявок волонтера:", await response.text());
-                    }
                 }
             }
         }
-        await getRequests();
-        setIsDetailedOpen(false);
+        setVerdictResult(null);
     }
-    setVerdictResult(null);
-}
 
     useEffect(() => {
+        const access_token = localStorage.getItem("access_token");
+        const userId = getUserIdFromToken(access_token);
+        if (userId) {
+            setCurrentUserId(userId);
+        }
         getRequests();
     }, []);
 
     useEffect(() => {
-        if (!selectedRequest) return;
-        const access_token = localStorage.getItem("access_token");
-        const socket = new WebSocket(`ws://localhost:8001/ws/${role}/${selectedRequest.id}?access_token=${access_token}`);
-        SetWs(socket);
-        setRequestId(selectedRequest.id);
-        getChatHistory(selectedRequest.id);
+            if (!selectedRequest) return;
+            const access_token = localStorage.getItem("access_token");
+            const socket = new WebSocket(`ws://localhost:8001/ws/${role}/${selectedRequest.id}?access_token=${access_token}`);
+            SetWs(socket);
+            setRequestId(selectedRequest.id);
+            getChatHistory(selectedRequest.id);
 
-        socket.onopen = () => setIsConnected(true);
+            socket.onopen = () => setIsConnected(true);
 
-        socket.onmessage = (event) => {
-            const [role, message] = event.data.split("-");
-            setMessages(prev => {
-                const nextMessages = [...prev, { role, message }];
-                return nextMessages;
-            });
-        };
+            socket.onmessage = (event) => {
+                const [role, message] = event.data.split("-");
+                setMessages(prev => {
+                    const nextMessages = [...prev, { role, message }];
+                    return nextMessages;
+                });
+            };
 
-        socket.onerror = () => {
-            console.error("WebSocket error");
-            setIsConnected(false);
-        };
-        socket.onclose = () => setIsConnected(false);
+            socket.onerror = () => {
+                console.error("WebSocket error");
+                setIsConnected(false);
+            };
+            socket.onclose = () => setIsConnected(false);
 
-        return () => {
-            socket.close();
-            SetWs(null);
-            setIsConnected(false);
-        };
-    }, [role, isDetailedOpen, selectedRequest]);
+            return () => {
+                socket.close();
+                SetWs(null);
+                setIsConnected(false);
+            };
+        }, [role, isDetailedOpen, selectedRequest]);
+
+
 
     return (
         <div className="home-page-container">
             <div className="div-header">
                 <p className="p-header">Главная</p>
+                <Link to={`/profile/${currentUserId}`} className="link-to-profile">
+                    Профиль
+                </Link>
             </div>
 
             <div className="main-content">
@@ -444,12 +491,12 @@ const closeVerdict = async () => {
                 <p className="footer-text">Связаться с нами</p>
             </div>
 
+
             {isDetailedOpen && selectedRequest && (
                 <div className="request-detailed-overlay" onClick={closeDetailed}>
-                    <div
-                        className="request-detailed-layout"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                    <div className="request-detailed-layout"
+                        onClick={(e) => e.stopPropagation()}>
+
                         <div className="request-detailed">
                             <button className="detailed-close" onClick={closeDetailed}>
                                 ×
@@ -462,34 +509,35 @@ const closeVerdict = async () => {
                                 <strong>Тип услуги: </strong>
                                 {serviceType[selectedRequest.service_type]}
                             </p>
-                            {(selectedRequest.service_type === "delivery_food" || selectedRequest.service_type === "delivery_drugs") ? (
-                                <>
-                                    <p>
-                                        <strong>Адрес: </strong>
-                                        {selectedRequest.address}
-                                    </p>
-                                    <p>
-                                        <strong>Список товаров: </strong>
-                                        {selectedRequest.list_products || "Не указан"}
-                                    </p>
-                                </>
-                            ) : selectedRequest.service_type === "mobility_help" ? (
-                                <>
-                                    <p>
-                                        <strong>Откуда: </strong>
-                                        {selectedRequest.address}
-                                    </p>
-                                    <p>
-                                        <strong>Куда: </strong>
-                                        {selectedRequest.destination_address || "Не указан"}
-                                    </p>
-                                </>
-                            ) : (
-                                <p>
-                                    <strong>Адрес: </strong>
-                                    {selectedRequest.address}
-                                </p>
-                            )}
+                            {(selectedRequest.service_type==="delivery_food" || selectedRequest.service_type==="delivery_drugs") ?
+                                    (
+                                    <>
+                                        
+                                        <p>
+                                            <strong>Адрес: </strong>
+                                            {selectedRequest.address}
+                                        </p>
+                                        <p>
+                                            <strong>Список товаров: </strong>
+                                            {selectedRequest.list_products}
+                                            </p>
+                                    </>):((selectedRequest.service_type==="mobility_help") ?
+                                        (
+                                        <>
+                                            <p><strong>Откуда: </strong>
+                                                {selectedRequest.address}
+                                            </p>
+                                            
+                                            <p><strong>Куда: </strong>
+                                                {selectedRequest.destination_address}
+                                            </p>
+                                        </>
+                                        ):(
+                                        <p><strong>Адрес: </strong>
+                                            {selectedRequest.address}
+                                        </p>
+                                        )
+                                    )}
                             <p>
                                 <strong>Комментарий: </strong>
                                 {selectedRequest.comment || "Нет комментария"}
@@ -498,15 +546,26 @@ const closeVerdict = async () => {
                                 <strong>Желаемое время: </strong>
                                 {formatDateTime(selectedRequest.desired_time)}
                             </p>
+
                             {role === "user" ? (
-                                <p>
-                                    <strong>Волонтёр: </strong>
-                                    {selectedRequest.volunteer_name || "Не назначен"}
-                                </p>
+                                <>
+                                    <p>
+                                        <strong>Волонтёр: </strong>
+                                    {((selectedRequest.volunteer_id !== -1) ? (<Link to={`/profile/${selectedRequest.volunteer_id}`} className="link-to-rating">
+                                        {selectedRequest.volunteer_name}
+                                    </Link>):(
+                                        <span>Не назначен</span>
+                                    ))}
+                                    
+                                    </p>
+                                </>
                             ) : (
                                 <p>
                                     <strong>Заказчик: </strong>
-                                    {selectedRequest.full_name}
+                                    <Link to={`/profile/${selectedRequest.user_id}`} className="link-to-rating">
+                                        {selectedRequest.full_name}
+                                    </Link>
+                                    
                                 </p>
                             )}
                             {role === "user" ? (
@@ -533,8 +592,8 @@ const closeVerdict = async () => {
                                     </div>
                                 )
                             )}
-
                         </div>
+
                         <div className="chat-panel">
                             <div className="chat-header">
                                 <p className="chat-title">Чат заявки</p>
@@ -576,86 +635,83 @@ const closeVerdict = async () => {
                                 </button>
                             </div>
                         </div>
+
                     </div>
                 </div>
             )}
 
             {showComplaintModal && (
-                <div className="request-detailed-overlay" onClick={() => setShowComplaintModal(false)}>
-                    <div
-                        className="complaint-modal"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <button
-                            className="detailed-close"
-                            onClick={() => setShowComplaintModal(false)}
-                        >
-                            ×
-                        </button>
-                        <h2>Подать жалобу</h2>
-                        <div className="complaint-form">
-                            <label>
-                                <strong>Тип жалобы:</strong>
-                                <select
-                                    value={complaintType}
-                                    onChange={(e) => setComplaintType(e.target.value)}
-                                >
-                                    <option value="chat">Чат (переписка)</option>
-                                    <option value="request">Заявка (выполнение)</option>
-                                    <option value="profile">Профиль</option>
-                                </select>
-                            </label>
-                            <label>
-                                <strong>Опишите проблему:</strong>
-                                <textarea
-                                    value={complaintText}
-                                    onChange={(e) => setComplaintText(e.target.value)}
-                                    placeholder="Подробно опишите причину жалобы..."
-                                    rows={5}
-                                />
-                            </label>
-                            <div className="complaint-actions">
-                                <button
-                                    onClick={() => setShowComplaintModal(false)}
-                                    className="cancel-btn"
-                                >
-                                    Отмена
-                                </button>
-                                <button
-                                    onClick={sendComplaint}
-                                    disabled={submittingComplaint || !complaintText.trim()}
-                                    className="submit-btn"
-                                >
-                                    {submittingComplaint ? "Отправка..." : "Отправить"}
-                                </button>
+                    <div className="request-detailed-overlay" onClick={() => setShowComplaintModal(false)}>
+                        <div
+                            className="complaint-modal"
+                            onClick={(e) => e.stopPropagation()}>
+                            <button
+                                className="detailed-close"
+                                onClick={() => setShowComplaintModal(false)}
+                            >
+                                ×
+                            </button>
+                            <h2>Подать жалобу</h2>
+                            <div className="complaint-form">
+                                <label>
+                                    <strong>Тип жалобы:</strong>
+                                    <select
+                                        value={complaintType}
+                                        onChange={(e) => setComplaintType(e.target.value)}
+                                    >
+                                        <option value="chat">Чат (переписка)</option>
+                                        <option value="request">Заявка (выполнение)</option>
+                                        <option value="profile">Профиль</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    <strong>Опишите проблему:</strong>
+                                    <textarea
+                                        value={complaintText}
+                                        onChange={(e) => setComplaintText(e.target.value)}
+                                        placeholder="Подробно опишите причину жалобы..."
+                                        rows={5}
+                                    />
+                                </label>
+                                <div className="complaint-actions">
+                                    <button
+                                        onClick={() => setShowComplaintModal(false)}
+                                        className="cancel-btn"
+                                    >
+                                        Отмена
+                                    </button>
+                                    <button
+                                        onClick={sendComplaint}
+                                        disabled={submittingComplaint || !complaintText.trim()}
+                                        className="submit-btn"
+                                    >
+                                        {submittingComplaint ? "Отправка..." : "Отправить"}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
             {isRatingOpen && (
                 <div className="request-detailed-overlay" onClick={() => {
                     setIsRatingOpen(false);
                     setSelectedRating(0);
-                    setHoveredRating(0);
-                }}>
+                    setHoveredRating(0);}}>
                     <div
                         className="rating-modal"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                        onClick={(e) => e.stopPropagation()}>
                         <button
                             className="detailed-close"
                             onClick={() => {
                                 setIsRatingOpen(false);
                                 setSelectedRating(0);
                                 setHoveredRating(0);
-                            }}
-                        >
+                            }}>
                             ×
                         </button>
                         <h2 className="rating-title">Оцените заявку</h2>
                         <p className="rating-subtitle">Выберите оценку от 1 до 5</p>
-                        
+
                         <div className="rating-stars-container">
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <button
@@ -698,12 +754,13 @@ const closeVerdict = async () => {
                     </div>
                 </div>
             )}
+
+
             {verdictResult && verdictResult.punishments && (
                 <div className="request-detailed-overlay" onClick={() => setVerdictResult(null)}>
                     <div
                         className="verdict-modal"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                        onClick={(e) => e.stopPropagation()}>
                         <button
                             className="detailed-close"
                             onClick={() => setVerdictResult(null)}
@@ -724,7 +781,7 @@ const closeVerdict = async () => {
                                         {p.verdict === "innocent" && "✅"}
                                     </span>
                                     <span className="punishment-label">
-                                        Пользователь #{p.user_id} ({p.role === "user" ? "Пользователь" : p.role === "volunteer" ? "Волонтёр" : p.role}):
+                                        Пользователь #{p.user_id}:
                                     </span>
                                     <span className="punishment-verdict">
                                         {p.verdict === "ban" && "Бан"}
@@ -766,8 +823,17 @@ const closeVerdict = async () => {
                     </div>
                 </div>
             )}
+
+            {notification.message && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={hideNotification}
+                    duration={5000}
+                />
+            )}
+        
         </div>
     );
 }
-
 export default HomePage;

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
+@import './error.css';
 
 .home-page-container {
     display: flex;
@@ -15,7 +16,6 @@
 .div-header {
     background-color: #FFE851;
     padding: 24px 32px;
-    text-align: center;
     width: 100%;
     position: relative;
     display: flex;
@@ -23,7 +23,6 @@
 }
 
 .p-header {
-    margin: 0;
     font-size: 24px;
     font-weight: 800;
     color: #000;
@@ -40,7 +39,10 @@
     text-decoration: underline;
     color: #000;
 }
-
+.link-to-rating {
+    color:#000;
+    text-decoration: underline;
+}
 .main-content {
     flex: 1;
     display: flex;
@@ -139,8 +141,6 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-
-/*TO-DO: keyframe animations */
 }
 .request-detailed-overlay {
     position: fixed;
@@ -304,9 +304,6 @@
     font-family: 'Jost', sans-serif;
 }
 
-
-
-
 .chat-message {
     padding: 12px 16px;
     border-radius: 16px;
@@ -458,7 +455,6 @@
     cursor: not-allowed;
 }
 
-/* Verdict Modal */
 .verdict-modal {
     background: white;
     border-radius: 16px;
@@ -625,7 +621,6 @@
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Rating Modal */
 .rating-modal {
     background: white;
     border-radius: 16px;
@@ -675,13 +670,12 @@
     transform: scale(1.15);
 }
 
-/* При наведении окрашиваем (если ничего не выбрано) */
 .rating-star.hovered {
     color: #FFD700;
     transform: scale(1.1);
 }
 
-/* Окрашиваем все выбранные звезды */
+
 .rating-star.selected {
     color: #FFD700;
     transform: scale(1.05);
