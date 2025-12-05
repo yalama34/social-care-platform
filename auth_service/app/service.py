@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import secrets
 from sqlalchemy import select
-from shared.models import RefreshToken
+from .shared.models import RefreshToken
 import random
 import os
 import httpx

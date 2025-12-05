@@ -1,10 +1,10 @@
 from fastapi import FastAPI, HTTPException, Header
-from routers import router, security, config
-from shared.database import engine, SessionDep
-from shared.models import Base
-from shared.models import UserModel, RefreshToken
+from .routers import router, security, config
+from .shared.database import engine, SessionDep
+from .shared.models import Base
+from .shared.models import UserModel, RefreshToken
 from contextlib import asynccontextmanager
-from service import TokenService
+from .service import TokenService
 from datetime import datetime
 from sqlalchemy import select, text
 from fastapi.middleware.cors import CORSMiddleware

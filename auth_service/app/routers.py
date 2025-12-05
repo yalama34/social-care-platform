@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from shared.models import EmailRequest, VerifyEmail, EndRegisterRequest, EndLoginRequest
+from .shared.models import EmailRequest, VerifyEmail, EndRegisterRequest, EndLoginRequest
 from authx import AuthX, AuthXConfig
-from service import TokenService, EmailService
-from shared.database import SessionDep
+from .service import TokenService, EmailService
+from .shared.database import SessionDep
 from datetime import timedelta, datetime
-from shared.models import UserModel, RefreshToken
+from .shared.models import UserModel, RefreshToken
 from sqlalchemy.future import select
 import hashlib
 import hmac
