@@ -9,7 +9,7 @@ function RequestFeed() {
     const [filterTypes, setFilterTypes] = useState([]);
     const [sortOrder, setSortOrder] = useState("newest");
 
-    const backendUrl = "http://localhost:8001";
+    const backendUrl = "http://core:8001";
     const navigate = useNavigate();
 
     const fetchRequest = useCallback(async () => {

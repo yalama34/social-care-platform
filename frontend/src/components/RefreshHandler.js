@@ -10,7 +10,7 @@ function RefreshHandler() {
       return;
     }
 
-    const backendUrl = "http://localhost:8000";
+    const backendUrl = "http://auth:8000";
 
     const refresh = async () => {
       const access_token = localStorage.getItem("access_token");

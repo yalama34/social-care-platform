@@ -12,7 +12,7 @@ function AdminPanel() {
     const [showDetails, setShowDetails] = useState(false);
     const [notification, setNotification] = useState({ message: null, type: 'error' });
     const navigate = useNavigate();
-    const backendUrl = "http://localhost:8001";
+    const backendUrl = "http://core:8001";
     const access_token = localStorage.getItem("access_token");
 
     const showNotification = (message, type = 'error') => {

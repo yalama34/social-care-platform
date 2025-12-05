@@ -8,7 +8,7 @@ function AuthApp(){
     let login_p = "";
     let link_to = "";
     let link_text = "";
-    const backendUrl = "http://localhost:8000";
+    const backendUrl = "http://auth:8000";
     let [email, setEmail] = useState("");
     let [errorMessage, setErrorMessage] = useState("");
     const [notification, setNotification] = useState({ message: null, type: 'error' });

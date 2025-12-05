@@ -6,7 +6,7 @@ import Notification from "./Notification";
 function UserName() {
     const [username, setUsername] = useState('');
     const navigate = useNavigate();
-    const backendUrl = "http://localhost:8000";
+    const backendUrl = "http://auth:8000";
     let [errorMessage, setErrorMessage] = useState("");
     const [notification, setNotification] = useState({ message: null, type: 'error' });
 

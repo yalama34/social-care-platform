@@ -42,7 +42,7 @@ function HomePage() {
     };
 
     const getRequests = async () => {
-        const backendUrl = "http://localhost:8001";
+        const backendUrl = "http://core:8001";
         const access_token = localStorage.getItem("access_token");
         const userId = getUserIdFromToken(access_token);
         if (userId) {
@@ -129,7 +129,7 @@ function HomePage() {
     };
 
     const deleteRequest = async (requestId) => {
-        const backendUrl = "http://localhost:8001";
+        const backendUrl = "http://core:8001";
         const access_token = localStorage.getItem("access_token");
         const request = await fetch(backendUrl + `/home/delete/${requestId}`, {
             method: "POST",
@@ -143,7 +143,7 @@ function HomePage() {
     }
 
     const confirmCompletion = async (requestId) => {
-        const backendUrl = "http://localhost:8001";
+        const backendUrl = "http://core:8001";
         const access_token = localStorage.getItem("access_token");
         const request = await fetch(backendUrl + `/home/complete/${requestId}`, {
             method: "POST",
@@ -157,7 +157,7 @@ function HomePage() {
     }
 
     const cancelRequest = async (requestId) => {
-        const backendUrl = "http://localhost:8001";
+        const backendUrl = "http://core:8001";
         const access_token = localStorage.getItem("access_token");
         const request = await fetch(backendUrl + `/home/cancel/${requestId}`, {
             method: "POST",
@@ -256,7 +256,7 @@ function HomePage() {
 
     const getChatHistory = async (requestId) => {
         const access_token = localStorage.getItem("access_token");
-        const backendUrl = "http://localhost:8001";
+        const backendUrl = "http://core:8001";
         if (!access_token) {
             setMessages([]);
             return;
@@ -296,7 +296,7 @@ function HomePage() {
             showNotification("Невозможно оценить: нет другого участника", 'error');
             return;
         }
-        const backendUrl = "http://localhost:8001";
+        const backendUrl = "http://core:8001";
         const access_token = localStorage.getItem("access_token");
         setSubmittingRating(true);
         try {
@@ -347,7 +347,7 @@ function HomePage() {
     const sendComplaint = async () => {
         if (!complaintText.trim() || !selectedRequest) return;
 
-        const backendUrl = "http://localhost:8001";
+        const backendUrl = "http://core:8001";
         const access_token = localStorage.getItem("access_token");
         const susUserId = role === "user"
             ? selectedRequest.volunteer_id
@@ -391,7 +391,7 @@ function HomePage() {
 
     const closeVerdict = async () => {
     if (verdictResult.confidence >= 90) {
-        const backendUrl = "http://localhost:8001";
+        const backendUrl = "http://core:8001";
         const access_token = localStorage.getItem("access_token");
 
         for (const punishment of verdictResult.punishments) {
@@ -447,7 +447,7 @@ function HomePage() {
     useEffect(() => {
             if (!selectedRequest) return;
             const access_token = localStorage.getItem("access_token");
-            const socket = new WebSocket(`ws://localhost:8001/ws/${role}/${selectedRequest.id}?access_token=${access_token}`);
+            const socket = new WebSocket(`ws://core:8001/ws/${role}/${selectedRequest.id}?access_token=${access_token}`);
             SetWs(socket);
             setRequestId(selectedRequest.id);
             getChatHistory(selectedRequest.id);
