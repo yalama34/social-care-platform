@@ -17,7 +17,7 @@ class ProfileService():
         return {
             "role": role,
             "full_name": user.full_name,
-            "phone": user.phone,
+            "email": user.email,
             "about": user.about
         }
 
@@ -36,7 +36,7 @@ class ProfileService():
             "access_id": access_user_id,
             "role": role,
             "full_name": user.full_name,
-            "phone": user.phone,
+            "email": user.email,
             "about": user.about
         }
     async def change_about(self, access_token, about: str) -> None:

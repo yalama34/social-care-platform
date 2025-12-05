@@ -18,6 +18,21 @@ async def lifespan(app: FastAPI):
     # Добавляем недостающие колонки, если их нет
     async with engine.begin() as conn:
         try:
+            # Миграция: переименование колонки phone в email
+            await conn.execute(text("""
+                DO $$ 
+                BEGIN 
+                    IF EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_name='users' AND column_name='phone'
+                    ) AND NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_name='users' AND column_name='email'
+                    ) THEN
+                        ALTER TABLE users RENAME COLUMN phone TO email;
+                    END IF;
+                END $$;
+            """))
             # Проверяем и добавляем destination_address
             await conn.execute(text("""
                 DO $$ 

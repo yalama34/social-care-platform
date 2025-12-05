@@ -5,6 +5,10 @@ from shared.models import RefreshToken
 import random
 import os
 import httpx
+import boto3
+from botocore.config import Config
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 SMSPILOT_API_KEY = os.getenv("SMSPILOT_API_KEY")
 
@@ -58,7 +62,56 @@ class TokenService():
             updated_token.expires_at = expires_at
             await self.session.commit()
 
+class EmailService:
+    def __init__(self, email):
+        self.email = email
+        self.ses_client = boto3.client(
+            service_name='sesv2',
+            endpoint_url='https://postbox.cloud.yandex.net',
+            region_name='ru-central1',
+            aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+            config=Config(signature_version="v4")
+        )
+        self.from_email = os.getenv("SES_FROM_EMAIL")
 
+    def generate_code(self):
+        import random
+        return str(random.randint(100000, 999999))
 
+    async def send_verification_code(self, code: str) -> bool:
+        charset = "utf-8"
 
+        msg = MIMEMultipart('mixed')
+        msg['Subject'] = "Код верификации"
+        msg['From'] = self.from_email
+        msg_body = MIMEMultipart('alternative')
 
+        text_part = MIMEText(f"Ваш код: {code}", 'plain', charset)
+        html_part = MIMEText(f"""
+        <html><body>
+        <h2>Код верификации</h2>
+        <p><strong>{code}</strong></p>
+        </body></html>
+        """, 'html', charset)
+
+        msg_body.attach(text_part)
+        msg_body.attach(html_part)
+        msg.attach(msg_body)
+
+        try:
+            self.ses_client.send_email(
+                FromEmailAddress=self.from_email,
+                Destination={
+                    'ToAddresses': [self.email]
+                },
+                Content={
+                    'Raw': {
+                        'Data': msg.as_string(),
+                    }
+                }
+            )
+            return True
+        except Exception as e:
+            print("err:", e)
+            return False
