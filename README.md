@@ -95,24 +95,21 @@ cd social-care-platform
 
 2. Создайте файл `.env` в корне проекта с переменными окружения:
 ```env
-# Database
-DATABASE_DB=social_care
-DATABASE_USER=postgres
-DATABASE_PASSWORD=your_secure_password
-DATABASE_PORT=5432
-DATABASE_HOST=localhost
+DATABASE_DB=
+DATABASE_USER=
+DATABASE_PASSWORD=
+DATABASE_PORT=
+DATABASE_HOST=
+QDRANT_HOST=
+QDRANT_PORT=
 
-# Yandex GPT (для модерации)
-YANDEX_FOLDER_ID=your_folder_id
-YANDEX_API_KEY=your_api_key
+YANDEX_FOLDER_ID=
+YANDEX_API_KEY=
 
-# Email (SMTP)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
-SMTP_USE_TLS=true
-SMTP_USE_SSL=false
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+SES_FROM_EMAIL=
+VERIFY_KEY=
 ```
 
 3. Запустите все сервисы:
