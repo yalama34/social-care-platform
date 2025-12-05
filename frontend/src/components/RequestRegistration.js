@@ -38,11 +38,15 @@ function RequestRegistration() {
     };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        try {
+            const { name, value } = e.target;
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        } catch (err) {
+            console.error('Ошибка при изменении поля:', err);
+        }
     };
     const handleSubmit = async () => {
         if (!formData.fullName.trim() || !formData.serviceType || !formData.address.trim() || !formData.desiredTime) {

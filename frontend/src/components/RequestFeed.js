@@ -186,17 +186,7 @@ function RequestFeed() {
             {requests.length > 0 && (
                 <div className="filters-container">
                     <div className="filter-group">
-                        <div className="filter-header">
-                            <label className="filter-label">Тип услуги:</label>
-                            {filterTypes.length > 0 && (
-                                <button
-                                    className="clear-filters-btn"
-                                    onClick={() => setFilterTypes([])}
-                                >
-                                    Очистить
-                                </button>
-                            )}
-                        </div>
+                        <label className="filter-label">Тип услуги:</label>
                         <div className="checkbox-group">
                             {Object.entries(serviceType).map(([key, label]) => (
                                 <label key={key} className="checkbox-label">
@@ -224,8 +214,8 @@ function RequestFeed() {
                             value={sortOrder}
                             onChange={(e) => setSortOrder(e.target.value)}
                         >
-                            <option value="newest">Сначала новые</option>
-                            <option value="oldest">Сначала старые</option>
+                            <option value="newest">Позднее</option>
+                            <option value="oldest">Быстрее</option>
                         </select>
                     </div>
                 </div>

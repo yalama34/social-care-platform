@@ -298,10 +298,9 @@ function HomePage() {
         }
         const backendUrl = "http://localhost:8001";
         const access_token = localStorage.getItem("access_token");
-
         setSubmittingRating(true);
         try {
-            const response = await fetch(`${backendUrl}/set-rating?add_rating=${selectedRating}&rated_user_id=${ratedUserId}`, {
+            const response = await fetch(`${backendUrl}/set-rating?add_rating=${selectedRating}&user_id=${ratedUserId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -391,13 +390,23 @@ function HomePage() {
     }
 
     const closeVerdict = async () => {
-        if (verdictResult.confidence >= 90) {
-            const backendUrl = "http://localhost:8001";
-            const access_token = localStorage.getItem("access_token");
+    if (verdictResult.confidence >= 90) {
+        const backendUrl = "http://localhost:8001";
+        const access_token = localStorage.getItem("access_token");
 
-            for (const punishment of verdictResult.punishments) {
-                if (punishment.verdict !== "innocent") {
-                    await fetch(backendUrl + `/verdict/${punishment.verdict}/${punishment.user_id}`, {
+        for (const punishment of verdictResult.punishments) {
+            if (punishment.verdict !== "innocent") {
+                await fetch(backendUrl + `/verdict/${punishment.verdict}/${punishment.user_id}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${access_token}`,
+                    }
+                });
+            }
+            if (punishment.verdict === "ban"){
+                if (punishment.role === "user" && (complaintType === "chat" || complaintType === "request")){
+                    await fetch(backendUrl + `/home/delete/${punishment.user_id}?by_id=True`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -405,10 +414,26 @@ function HomePage() {
                         }
                     });
                 }
+                if (punishment.role === "volunteer" && (complaintType === "chat" || complaintType === "request")){
+                    const response = await fetch(backendUrl + `/home/cancel/${punishment.user_id}?by_volunteer_id=true`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${access_token}`,
+                        }
+                    });
+                    if (!response.ok) {
+                        showNotification(`Ошибка при освобождении заявок волонтера:${await response.text()}`, 'error');
+                    }
+                }
             }
         }
-        setVerdictResult(null);
+        await getRequests();
+        setIsDetailedOpen(false);
     }
+    setVerdictResult(null);
+}
+
 
     useEffect(() => {
         const access_token = localStorage.getItem("access_token");
