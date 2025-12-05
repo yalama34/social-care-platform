@@ -12,7 +12,7 @@ function AdminPanel() {
     const [showDetails, setShowDetails] = useState(false);
     const [notification, setNotification] = useState({ message: null, type: 'error' });
     const navigate = useNavigate();
-    const backendUrl = "http://core:8001";
+    const backendUrl = "http://89.169.188.41:8001";
     const access_token = localStorage.getItem("access_token");
 
     const showNotification = (message, type = 'error') => {
@@ -30,7 +30,7 @@ function AdminPanel() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${access_token}`,
+                    '://89.169.188.41orization': `Bearer ${access_token}`,
                 },
             });
 
@@ -63,7 +63,7 @@ function AdminPanel() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${access_token}`,
+                    '://89.169.188.41orization': `Bearer ${access_token}`,
                 },
             });
 
@@ -93,7 +93,7 @@ function AdminPanel() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${access_token}`,
+                    '://89.169.188.41orization': `Bearer ${access_token}`,
                 },
             });
 

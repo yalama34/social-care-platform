@@ -23,7 +23,7 @@ function RequestRegistration() {
     if (formData.serviceType === "delivery_drugs")
         additional_field = "Список лекарств";
 
-    const backendUrl = "http://core:8001";
+    const backendUrl = "http://89.169.188.41:8001";
     const navigate = useNavigate();
     const role = localStorage.getItem("role");
     const access_token = localStorage.getItem("access_token");

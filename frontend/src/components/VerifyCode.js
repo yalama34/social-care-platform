@@ -6,7 +6,7 @@ import Notification from "./Notification";
 function VerifyCode() {
     const [code, setCode] = useState('');
     const navigate = useNavigate();
-    const backendUrl = "http://auth:8000";
+    const backendUrl = "http://89.169.188.41:8000";
     const role = localStorage.getItem("role");
     let [errorMessage, setErrorMessage] = useState("");
     const [notification, setNotification] = useState({ message: null, type: 'error' });

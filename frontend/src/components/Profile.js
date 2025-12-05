@@ -13,7 +13,7 @@ function Profile() {
     const [ableEditing, setAbleEditing] = useState(true);
     const [rating, setRating] = useState(null);
     const [ratingLoading, setRatingLoading] = useState(false);
-    const backendUrl = "http://core:8001";
+    const backendUrl = "http://89.169.188.41:8001";
     const access_token = localStorage.getItem("access_token");
     const role = localStorage.getItem("role");
     
