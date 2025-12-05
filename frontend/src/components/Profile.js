@@ -68,8 +68,8 @@ function Profile() {
     }, [user_id]);
 
     const renderAbout = () => {
-        if (profileData && profileData.role === 'volunteer' && ableEditing) {
-            if (isEditing) {
+        if (profileData && profileData.role === 'volunteer') {
+            if (isEditing && ableEditing) {
                 return (
                     <div className="profile-section">
                         <p className="profile-label">О себе</p>
@@ -121,12 +121,12 @@ function Profile() {
                             {about || "Информация отсутствует"}
                         </p>
                         <div className="profile-buttons">
-                            <button
+                            {ableEditing && <button
                                 className="profile-btn primary"
                                 onClick={() => setIsEditing(true)}
                             >
                                 Редактировать
-                            </button>
+                            </button>}
                         </div>
                     </div>
                 );
