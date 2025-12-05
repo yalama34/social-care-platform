@@ -6,12 +6,9 @@ from shared.models import UserModel, RefreshToken
 from contextlib import asynccontextmanager
 from service import TokenService
 from datetime import datetime
-from sqlalchemy import select
+from sqlalchemy import select, text
 from fastapi.middleware.cors import CORSMiddleware
 import jwt
-
-
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

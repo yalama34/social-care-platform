@@ -1,7 +1,7 @@
 import re
 from typing import Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, EmailStr
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import ForeignKey, String, Integer, DateTime, Boolean, Float
 import datetime
@@ -10,7 +10,7 @@ from sqlalchemy.sql import func
 class User(BaseModel):
     id: int
     full_name: str
-    phone: str
+    email: str
     access_token: str
     refresh_token: str
 
@@ -22,7 +22,7 @@ class UserModel(Base):
     __tablename__ = 'users'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     full_name: Mapped[str] = mapped_column(String)
-    phone: Mapped[str] = mapped_column(String, index=True)
+    email: Mapped[str] = mapped_column(String, index=True)
     about: Mapped[str] = mapped_column(String, default="")
     warnings: Mapped[int] = mapped_column(Integer, default=0)
 
@@ -76,18 +76,13 @@ class UserRating(Base):
         self.average_rating = round(self.total_rating / self.rating_count, 1)
 
 #Requests models
-class PhoneRequest(BaseModel):
-    phone: str
+class EmailRequest(BaseModel):
+    email: EmailStr
 
-    @field_validator('phone')
-    def validate_phone_number(cls, value):
-        if not re.match(r'(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)', value):
-            raise ValueError('Invalid phone number')
-        return value
-
-class VerifyPhone(BaseModel):
-    phone: str
+class VerifyEmail(BaseModel):
+    email: EmailStr
     code: str
+    code_hash: str
 
 class EndRegisterRequest(BaseModel):
     full_name: str

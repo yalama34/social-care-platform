@@ -46,7 +46,7 @@ function UserName() {
                 return;
             }
             const data=await request.json();
-            localStorage.removeItem('phone');
+            localStorage.removeItem('email');
             localStorage.removeItem('temp_token');
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('full_name', username.trim());

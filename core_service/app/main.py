@@ -12,8 +12,7 @@ from .routers.rating import rating_router
 from .routers.admin import admin_router
 from .common.database import engine
 from .common.models import Base
-# Импортируем все модели, чтобы они были зарегистрированы в Base.metadata
-from .common import models  # Это гарантирует, что все модели будут зарегистрированы
+from .common import models
 from contextlib import asynccontextmanager
 from sqlalchemy import text
 
@@ -23,11 +22,22 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         print("✅ Таблицы созданы/проверены")
-    
-    # Добавляем недостающие колонки, если их нет
     async with engine.begin() as conn:
         try:
-            # Проверяем и добавляем destination_address
+            await conn.execute(text("""
+                DO $$ 
+                BEGIN 
+                    IF EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_name='users' AND column_name='phone'
+                    ) AND NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_name='users' AND column_name='email'
+                    ) THEN
+                        ALTER TABLE users RENAME COLUMN phone TO email;
+                    END IF;
+                END $$;
+            """))
             await conn.execute(text("""
                 DO $$ 
                 BEGIN 
@@ -39,7 +49,6 @@ async def lifespan(app: FastAPI):
                     END IF;
                 END $$;
             """))
-            # Проверяем и добавляем list_products
             await conn.execute(text("""
                 DO $$ 
                 BEGIN 

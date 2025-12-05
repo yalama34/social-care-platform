@@ -9,7 +9,7 @@ function AuthApp(){
     let link_to = "";
     let link_text = "";
     const backendUrl = "http://localhost:8000";
-    let [phone, setPhone] = useState("");
+    let [email, setEmail] = useState("");
     let [errorMessage, setErrorMessage] = useState("");
     const [notification, setNotification] = useState({ message: null, type: 'error' });
     const navigate = useNavigate();
@@ -33,8 +33,8 @@ function AuthApp(){
 
     const handleSendCode = async () => {
         setErrorMessage("");
-        if (!phone.trim()) {
-            showNotification("Введите номер телефона", 'warning');
+        if (!email.trim()) {
+            showNotification("Введите email", 'warning');
             return;
         }
         const request = await fetch(backendUrl + cur_adress,{
@@ -42,11 +42,11 @@ function AuthApp(){
             headers:{
                 'Content-type': 'application/json'
             },
-            body: JSON.stringify({phone: phone.trim()})
+            body: JSON.stringify({email: email.trim()})
         })
         if (!request.ok){
             if (request.status === 422){
-                setErrorMessage("Неверный формат номера телефона");
+                setErrorMessage("Неверный формат email");
                 return;
             }
             const errorData = await request.json();
@@ -57,8 +57,9 @@ function AuthApp(){
             const data = await request.json();
 
             if (data.code_sent){
-                localStorage.setItem("phone", phone.trim())
-                navigate("/auth/verify-phone");
+                localStorage.setItem("email", email.trim())
+                localStorage.setItem("code_hash", data.code_hash)
+                navigate("/auth/verify-email");
             }
             else{
                 showNotification('Ошибка отправки кода', 'error');
@@ -67,7 +68,7 @@ function AuthApp(){
     }
     useEffect(() => {
         setErrorMessage("");
-    }, [phone]);
+    }, [email]);
 
     
 
@@ -85,13 +86,13 @@ function AuthApp(){
             <>
                 <div className="auth_block">
                     <p className="login_p">{login_p}</p>
-                    <p className="phone_p">Номер телефона</p>
+                    <p className="phone_p">Электронная почта</p>
                     <div className="container_phone">
                         <input type="text" 
                             className="input_phone" 
-                            placeholder="Введите номер телефона" 
-                            onChange={(e) => setPhone(e.target.value)} 
-                            value={phone}>
+                            placeholder="Введите email" 
+                            onChange={(e) => setEmail(e.target.value)} 
+                            value={email}>
                         </input>
                         <p className="error_message">{errorMessage || ""}</p>
                         <button className="button_code" onClick={handleSendCode}>
