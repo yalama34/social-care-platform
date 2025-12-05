@@ -49,7 +49,6 @@ async def accept_request(session: SessionDep, add_rating: int = Query(...), user
             user_rating = UserRating(user_id=user_id)
             session.add(user_rating)
             await session.flush()
-        print("!!!!! РЕЙТИНГ ПОЛЬЗОВАТЕЛЯ !!!!", user_rating.average_rating)
         user_rating.update_rating(add_rating)
 
 
