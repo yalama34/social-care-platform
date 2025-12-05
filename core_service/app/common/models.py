@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -60,7 +60,6 @@ class ChatModel(Base):
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
-
 class UserRating(Base):
     __tablename__ = 'user_ratings'
 
@@ -76,6 +75,22 @@ class UserRating(Base):
         self.rating_count += 1
         self.average_rating = round(self.total_rating / self.rating_count, 1)
 
+
+class ComplaintModel(Base):
+    __tablename__ = 'complaints'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    complaint_type: Mapped[str] = mapped_column(String)
+    complaint_text: Mapped[str] = mapped_column(String)
+    complainant_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    suspect_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    request_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    details: Mapped[str] = mapped_column(String)
+    ai_response: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String, default="pending")
+    admin_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    admin_verdict: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=func.now())
 
 
 #Requests models
@@ -136,3 +151,9 @@ class ComplaintRequest(BaseModel):
     complaint_text: str
     sus_user_id: int
     request_id: Optional[int] = None
+
+
+class PunishmentRequest(BaseModel):
+    punishments: List[Dict[str, Any]]
+    confidence: int
+    reasoning: str
