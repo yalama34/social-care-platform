@@ -9,12 +9,21 @@ from .routers.chat import chat_router
 from .routers.moderation import moderation_router
 from .routers.verdict import verdict_router
 from .routers.rating import rating_router
+from .routers.admin import admin_router
 from .common.database import engine
+from .common.models import Base
+# Импортируем все модели, чтобы они были зарегистрированы в Base.metadata
+from .common import models  # Это гарантирует, что все модели будут зарегистрированы
 from contextlib import asynccontextmanager
 from sqlalchemy import text
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Создаем все таблицы
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        print("✅ Таблицы созданы/проверены")
+    
     # Добавляем недостающие колонки, если их нет
     async with engine.begin() as conn:
         try:
@@ -65,6 +74,7 @@ app.include_router(chat_router)
 app.include_router(moderation_router)
 app.include_router(verdict_router)
 app.include_router(rating_router)
+app.include_router(admin_router)
 
 """
 if __name__ == "__main__":

@@ -1,12 +1,13 @@
 from fastapi import HTTPException, APIRouter, Header
 from ..common.database import SessionDep
-from ..common.models import RequestModel, ComplaintRequest, UserModel
+from ..common.models import RequestModel, ComplaintRequest, UserModel,ComplaintModel
 from ..services.chat import ChatService
 from ..services.profile import ProfileService
 from sqlalchemy import select
 from authx import AuthX, AuthXConfig
 from datetime import timedelta
 from ..services.analysis import AnalysisService
+import json
 
 moderation_router = APIRouter(prefix="/complaint", tags=["moderation"])
 
@@ -133,4 +134,19 @@ async def request_moderation(
                 elif punishment["user_id"] == suspend["uid"]:
                     punishment["role"] = suspend["role"]
 
+    complaint = ComplaintModel(
+        complaint_type=complaint_type,
+        complaint_text=request.complaint_text,
+        complainant_id=complainant["uid"],
+        suspect_id=suspend["uid"],
+        request_id=request.request_id,
+        details=json.dumps(details, ensure_ascii=False),
+        ai_response=json.dumps(ai_response, ensure_ascii=False),
+        status="pending" if ai_response.get("confidence", 0) < 90 else "onwait"
+    )
+    session.add(complaint)
+    await session.commit()
+    await session.refresh(complaint)
+
+    return ai_response
     return ai_response
