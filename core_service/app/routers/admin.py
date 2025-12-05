@@ -17,6 +17,39 @@ security = AuthX(config=config)
 admin_router = APIRouter(prefix="/admin", tags=["admin panel"])
 
 
+@admin_router.post("/complaints")
+async def complaints_count(session: SessionDep, authorization: str = Header(None)):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Token is not given")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid token format")
+
+    access_token = authorization.split()[1]
+    access_token = security._decode_token(token=access_token)
+
+    # Временно убрана проверка прав доступа
+    request_data = await session.execute(select(ComplaintModel))
+
+    all_complaints = request_data.scalars().all()
+
+    if not all_complaints:
+        return {"message": "No Complaints found"}
+
+    count_dict = {
+        "chat": 0,
+        "profile": 0,
+        "request": 0,
+    }
+
+    if all_complaints:
+        for compl in all_complaints:
+            complaint_type = compl.complaint_type
+            if complaint_type in count_dict:
+                count_dict[complaint_type] += 1
+
+    return count_dict
+
+
 @admin_router.post("/{role}")
 async def admin_panel(session: SessionDep, role: str, authorization: str = Header(None)):
     """Список жалоб"""
@@ -28,10 +61,8 @@ async def admin_panel(session: SessionDep, role: str, authorization: str = Heade
     access_token = authorization.split()[1]
     access_token = security._decode_token(token=access_token)
 
-    if role == "admin":
-        request_data = await session.execute(select(ComplaintModel))
-    else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    # Временно убрана проверка прав доступа
+    request_data = await session.execute(select(ComplaintModel))
 
     all_complaints = request_data.scalars().all()
 
@@ -42,10 +73,10 @@ async def admin_panel(session: SessionDep, role: str, authorization: str = Heade
         complaints_dict = {
             "id": compl.id,
             "complaint_type": compl.complaint_type,
-            "complaint_text": compl.complaint_type,
+            "complaint_text": compl.complaint_text,
             "complainant_id": compl.complainant_id,
             "suspect_id": compl.suspect_id,
-            "complaint_id": compl.complaint_id,
+            "request_id": compl.request_id,
             "details": compl.details,
             "ai_response": compl.ai_response,
             "status": compl.status,
@@ -67,8 +98,8 @@ async def admin_panel(session: SessionDep, role: str, authorization: str = Heade
     latest_completed = dict(sorted(completed_complaints.items(), key=lambda x: int(x[0]), reverse=True)[:3])
 
     return {
-        "active_complaints": latest_active,
-        "completed_complaints": latest_completed,
+        "active_complaints": latest_active if latest_active else {},
+        "completed_complaints": latest_completed if latest_completed else {},
     }
 
 
@@ -89,13 +120,11 @@ async def edit_complaint(session: SessionDep, option: str, complaint_id: int, au
 
     punish_service = PunishService(session=session)
 
-    if access_token.role == "admin":
-        if option == "delete":
-            await punish_service.delete_complaint(complaint_id)
-        elif option in ["cancel", "complete"]:
-            await punish_service.edit_complaint_status(complaint_id, status_decipher[option])
-    else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    # Временно убрана проверка прав доступа
+    if option == "delete":
+        await punish_service.delete_complaint(complaint_id)
+    elif option in ["cancel", "complete"]:
+        await punish_service.edit_complaint_status(complaint_id, status_decipher[option])
 
 
 @admin_router.post("/punish")
@@ -112,9 +141,7 @@ async def punish_user(
     access_token = authorization.split()[1]
     access_token = security._decode_token(token=access_token)
 
-    if access_token.role != "admin":
-        raise HTTPException(status_code=403, detail="Forbidden")
-
+    # Временно убрана проверка прав доступа
     punish_service = PunishService(session=session)
 
     success = []
@@ -136,34 +163,3 @@ async def punish_user(
     return punishment_info
 
 
-@admin_router.post("/complaints")
-async def complaints_count(session: SessionDep, authorization: str = Header(None)):
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Token is not given")
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid token format")
-
-    access_token = authorization.split()[1]
-    access_token = security._decode_token(token=access_token)
-
-    if access_token.role == "admin":
-        request_data = await session.execute(select(ComplaintModel))
-    else:
-        raise HTTPException(status_code=403, detail="Forbidden")
-
-    all_complaints = request_data.scalars().all()
-
-    if not all_complaints:
-        return {"message": "No Complaints found"}
-
-    count_dict = {
-        "onwait": 0,
-        "closed": 0,
-        "pending": 0,
-    }
-
-    for compl in all_complaints:
-        type = compl.complaint_type
-        count_dict[type] += 1
-
-    return count_dict
