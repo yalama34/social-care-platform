@@ -65,8 +65,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
-      - REACT_APP_CORE_API_URL=http://localhost:8001
+      - REACT_APP_API_URL=http://auth:8000
+      - REACT_APP_CORE_API_URL=http://core:8001
     depends_on:
       - auth
       - core
