@@ -82,9 +82,3 @@ async def check_session(session: SessionDep, authorization: str = Header(None)) 
         "role": access_token.get("role"),
         "full_name": user.full_name,
     }
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
